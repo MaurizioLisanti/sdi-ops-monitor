@@ -1,0 +1,83 @@
+{
+  "_comment": "coord/STATE.json — Fonte di verità primaria sullo stato della pipeline. Aggiorna dopo ogni HANDOFF DONE. Se in conflitto con BOARD.md, questo file vince.",
+  "_version": "1.0",
+  "_template": "pipeline-agentiva-v2",
+
+  "project": "[nome progetto]",
+  "stack": "[stack rilevato — es. PHP/Laravel | Python/FastAPI | Node/Express]",
+  "complexity": "[LOW | MED | HIGH]",
+  "complexity_score": {
+    "task_count": 0,
+    "dependency_chains": 0,
+    "modules": 0,
+    "risk_tier": 0,
+    "total": 0,
+    "label": "[LOW | MED | HIGH]"
+  },
+
+  "current_wave": 1,
+  "total_waves": 1,
+
+  "waves": {
+    "wave_1": {
+      "name": "[nome wave]",
+      "milestone": "[M0 | M1 | M2]",
+      "status": "[TODO | IN_PROGRESS | DONE | FAILED]",
+      "entry_condition": "[N/A per wave 1 | Wave N-1 DONE]",
+      "exit_condition": "Tutti i task DONE + smoke test PASS + nessun rischio P:A/I:A aperto",
+      "tasks": {
+        "TASK_scaffold_m0_boot": {
+          "status": "TODO",
+          "risk_tier": "MED",
+          "assignee": "[agente consigliato]",
+          "handoff": "coord/HANDOFF_scaffold_m0_boot.md",
+          "smoke_test_after_merge": "[PASS | FAIL | PENDING]",
+          "last_updated": null
+        },
+        "TASK_guardrails_m1_core": {
+          "status": "BLOCKED",
+          "blocked_by": ["TASK_scaffold_m0_boot"],
+          "risk_tier": "HIGH",
+          "assignee": "[agente consigliato]",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        },
+        "TASK_tests_m1_smoke": {
+          "status": "BLOCKED",
+          "blocked_by": ["TASK_scaffold_m0_boot"],
+          "risk_tier": "LOW",
+          "assignee": "[agente consigliato]",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        },
+        "TASK_docs_m1_runbook": {
+          "status": "BLOCKED",
+          "blocked_by": ["TASK_guardrails_m1_core", "TASK_tests_m1_smoke"],
+          "risk_tier": "LOW",
+          "assignee": "[agente consigliato]",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        }
+      },
+      "integration_report": null,
+      "wave_started": null,
+      "wave_completed": null
+    }
+  },
+
+  "open_halts": [],
+
+  "assumptions": [],
+
+  "replan_history": [],
+
+  "meta": {
+    "created": null,
+    "last_updated": null,
+    "agent_last_run": "[claude-code | qwen | goose | altro]",
+    "prompt_used": "[PROMPT_0X_nome]"
+  }
+}
