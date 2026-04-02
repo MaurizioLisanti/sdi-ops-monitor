@@ -27,16 +27,16 @@
       "exit_condition": "Tutti i task DONE + make test PASS + nessun rischio P:A/I:A aperto",
       "tasks": {
         "TASK_scaffold_m0_boot": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": [],
           "blocks": ["TASK_m0_health_endpoint", "TASK_m0_metric_ingestion", "TASK_m0_dashboard"],
           "risk_tier": "MED",
           "assignee": "Executor",
           "suggested_agent": "Codex",
-          "handoff": null,
+          "handoff": "coord/HANDOFF_scaffold_m0_boot.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-02T00:00:00Z",
-          "last_updated": "2026-04-02T12:00:00Z"
+          "last_updated": "2026-04-02T12:30:00Z"
         },
         "TASK_m0_health_endpoint": {
           "status": "TODO",
@@ -143,10 +143,10 @@
 
   "milestone_status": {
     "M0": {
-      "percent_done": 0,
-      "tasks_done": 0,
+      "percent_done": 20,
+      "tasks_done": 1,
       "tasks_total": 5,
-      "next_action": "Assegnare TASK_scaffold_m0_boot a Executor (nessuna dipendenza)"
+      "next_action": "TASK_scaffold_m0_boot DONE — sblocca: TASK_m0_health_endpoint, TASK_m0_metric_ingestion, TASK_m0_dashboard (paralleli)"
     },
     "M1": {
       "unlocked": false,
@@ -177,8 +177,8 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-02T12:00:00Z",
-    "agent_last_run": "claude-code",
-    "prompt_used": "PROMPT_03_planner_agent_v3"
+    "last_updated": "2026-04-02T12:30:00Z",
+    "agent_last_run": "claude-sonnet-4-6",
+    "prompt_used": "PROMPT_04_executor_agent_v3"
   }
 }

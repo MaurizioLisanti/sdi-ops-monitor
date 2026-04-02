@@ -2,9 +2,9 @@
 # Stack: PHP 8.2 / CakePHP 5 / MySQL / AWS
 # Usage: make <target>
 
-PHP      := php
+PHP      := php8.2
 COMPOSER := composer
-CAKE     := $(PHP) bin/cake
+CAKE     := $(PHP) bin/cake.php
 PHPUNIT  := ./vendor/bin/phpunit
 
 .PHONY: help install up migrate seed test cs-check cs-fix routes shell clean
