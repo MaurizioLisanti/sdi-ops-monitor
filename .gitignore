@@ -1,8 +1,11 @@
-# CakePHP 3
+# CakePHP 5 — sdi-ops-monitor
 
-/vendor/*
+/vendor/
 /config/app.php
+/config/app_local.php
+.env
 
+# CakePHP temp / cache
 /tmp/cache/models/*
 !/tmp/cache/models/empty
 /tmp/cache/persistent/*
@@ -14,12 +17,23 @@
 /tmp/tests/*
 !/tmp/tests/empty
 
+# Logs
 /logs/*
 !/logs/empty
 
-# CakePHP 2
+# Composer
+/composer.phar
 
-/app/tmp/*
-/app/Config/core.php
-/app/Config/database.php
-/vendors/*
+# PHPUnit
+/.phpunit.result.cache
+/phpunit.xml
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

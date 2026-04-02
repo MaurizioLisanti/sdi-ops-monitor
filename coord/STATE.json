@@ -1,0 +1,135 @@
+{
+  "_comment": "coord/STATE.json — Fonte di verità primaria sullo stato della pipeline. Aggiorna dopo ogni HANDOFF DONE. Se in conflitto con BOARD.md, questo file vince.",
+  "_version": "1.0",
+  "_template": "pipeline-agentiva-v2",
+
+  "project": "sdi-ops-monitor",
+  "stack": "PHP 8.2 / CakePHP 5 / MySQL 8.0 / AWS",
+  "complexity": "MED",
+  "complexity_score": {
+    "task_count": 1,
+    "dependency_chains": 1,
+    "modules": 1,
+    "risk_tier": 1,
+    "total": 4,
+    "label": "MED"
+  },
+
+  "current_wave": 1,
+  "total_waves": 2,
+
+  "waves": {
+    "wave_1": {
+      "name": "M0 — Scaffold & Core Endpoints",
+      "milestone": "M0",
+      "status": "TODO",
+      "entry_condition": "N/A per wave 1",
+      "exit_condition": "Tutti i task DONE + make test PASS + nessun rischio P:A/I:A aperto",
+      "tasks": {
+        "TASK_scaffold_m0_boot": {
+          "status": "TODO",
+          "risk_tier": "MED",
+          "assignee": "Executor",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        },
+        "TASK_m0_health_endpoint": {
+          "status": "TODO",
+          "blocked_by": ["TASK_scaffold_m0_boot"],
+          "risk_tier": "LOW",
+          "assignee": "Executor",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        },
+        "TASK_m0_metric_ingestion": {
+          "status": "TODO",
+          "blocked_by": ["TASK_scaffold_m0_boot"],
+          "risk_tier": "MED",
+          "assignee": "Executor",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        },
+        "TASK_m0_dashboard": {
+          "status": "TODO",
+          "blocked_by": ["TASK_scaffold_m0_boot"],
+          "risk_tier": "LOW",
+          "assignee": "Executor",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        },
+        "TASK_m0_tests_smoke": {
+          "status": "TODO",
+          "blocked_by": ["TASK_m0_health_endpoint", "TASK_m0_metric_ingestion", "TASK_m0_dashboard"],
+          "risk_tier": "LOW",
+          "assignee": "Executor",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        }
+      },
+      "integration_report": null,
+      "wave_started": null,
+      "wave_completed": null
+    },
+    "wave_2": {
+      "name": "M1 — Alert Engine & AWS Integration",
+      "milestone": "M1",
+      "status": "BLOCKED",
+      "entry_condition": "Wave 1 DONE",
+      "exit_condition": "Tutti i task DONE + make test PASS + SNS signature validation PASS",
+      "tasks": {
+        "TASK_m1_alert_engine": {
+          "status": "BLOCKED",
+          "blocked_by": ["wave_1"],
+          "risk_tier": "HIGH",
+          "assignee": "Executor",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        },
+        "TASK_m1_aws_integration": {
+          "status": "BLOCKED",
+          "blocked_by": ["wave_1"],
+          "risk_tier": "HIGH",
+          "assignee": "Executor",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        },
+        "TASK_m1_observability": {
+          "status": "BLOCKED",
+          "blocked_by": ["wave_1"],
+          "risk_tier": "MED",
+          "assignee": "Executor",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "last_updated": null
+        }
+      },
+      "integration_report": null,
+      "wave_started": null,
+      "wave_completed": null
+    }
+  },
+
+  "open_halts": [],
+
+  "assumptions": [
+    {"id": "A1", "text": "MySQL 8.0 disponibile e raggiungibile all'avvio"},
+    {"id": "A2", "text": "AWS credentials iniettate via env vars — non hardcoded"},
+    {"id": "A3", "text": "In M0 non c'è autenticazione — accesso libero ad API e dashboard"}
+  ],
+
+  "replan_history": [],
+
+  "meta": {
+    "created": "2026-04-02T00:00:00Z",
+    "last_updated": "2026-04-02T00:00:00Z",
+    "agent_last_run": "claude-code",
+    "prompt_used": "PROMPT_02_repo_seed_v3"
+  }
+}
