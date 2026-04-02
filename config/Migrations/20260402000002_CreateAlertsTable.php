@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
+use Migrations\BaseMigration;
 
 /**
  * Migration: create alerts table.
@@ -9,7 +9,7 @@ use Migrations\AbstractMigration;
  * @skeleton M0
  * TODO (Planner): confirm FK constraint behavior on metric delete (cascade vs restrict).
  */
-class CreateAlertsTable extends AbstractMigration
+class CreateAlertsTable extends BaseMigration
 {
     public function change(): void
     {

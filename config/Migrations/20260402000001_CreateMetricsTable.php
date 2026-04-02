@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use Migrations\AbstractMigration;
+use Migrations\BaseMigration;
 
 /**
  * Migration: create metrics table.
@@ -9,7 +9,7 @@ use Migrations\AbstractMigration;
  * @skeleton M0
  * TODO (Planner): review column types/precision; add composite indexes after load testing.
  */
-class CreateMetricsTable extends AbstractMigration
+class CreateMetricsTable extends BaseMigration
 {
     public function change(): void
     {

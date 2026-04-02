@@ -5,7 +5,7 @@
     "require": {
         "php": ">=8.2",
         "cakephp/cakephp": "^5.0",
-        "cakephp/migrations": "^4.0",
+        "cakephp/migrations": "^5.0",
         "cakephp/bake": "^3.0"
     },
     "require-dev": {
