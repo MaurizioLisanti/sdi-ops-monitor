@@ -39,16 +39,16 @@
           "last_updated": "2026-04-02T12:30:00Z"
         },
         "TASK_m0_health_endpoint": {
-          "status": "DONE",
+          "status": "TODO",
           "blocked_by": ["TASK_scaffold_m0_boot"],
           "blocks": ["TASK_m0_tests_smoke"],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
-          "handoff": "coord/HANDOFF_m0_health_endpoint.md",
+          "handoff": null,
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-02T00:00:00Z",
-          "last_updated": "2026-04-02T14:00:00Z"
+          "last_updated": "2026-04-02T12:00:00Z"
         },
         "TASK_m0_metric_ingestion": {
           "status": "TODO",
@@ -143,10 +143,10 @@
 
   "milestone_status": {
     "M0": {
-      "percent_done": 40,
-      "tasks_done": 2,
+      "percent_done": 20,
+      "tasks_done": 1,
       "tasks_total": 5,
-      "next_action": "TASK_m0_health_endpoint DONE — in parallelo: TASK_m0_metric_ingestion, TASK_m0_dashboard"
+      "next_action": "TASK_scaffold_m0_boot DONE — sblocca: TASK_m0_health_endpoint, TASK_m0_metric_ingestion, TASK_m0_dashboard (paralleli)"
     },
     "M1": {
       "unlocked": false,
@@ -177,7 +177,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-02T14:00:00Z",
+    "last_updated": "2026-04-02T12:30:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_04_executor_agent_v3"
   }
