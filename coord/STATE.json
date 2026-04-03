@@ -39,16 +39,16 @@
           "last_updated": "2026-04-02T12:30:00Z"
         },
         "TASK_m0_health_endpoint": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": ["TASK_scaffold_m0_boot"],
           "blocks": ["TASK_m0_tests_smoke"],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
-          "handoff": null,
+          "handoff": "coord/HANDOFF_m0_health_endpoint.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-02T00:00:00Z",
-          "last_updated": "2026-04-02T12:00:00Z"
+          "last_updated": "2026-04-03T00:00:00Z"
         },
         "TASK_m0_metric_ingestion": {
           "status": "TODO",
@@ -177,8 +177,8 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-02T12:30:00Z",
+    "last_updated": "2026-04-03T00:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
-    "prompt_used": "PROMPT_04_executor_agent_v3"
+    "prompt_used": "PROMPT_05_reviewer_agent_v3"
   }
 }
