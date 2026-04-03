@@ -22,7 +22,7 @@
     "wave_1": {
       "name": "M0 — Scaffold & Core Endpoints",
       "milestone": "M0",
-      "status": "TODO",
+      "status": "DONE",
       "entry_condition": "N/A per wave 1",
       "exit_condition": "Tutti i task DONE + make test PASS + nessun rischio P:A/I:A aperto",
       "tasks": {
@@ -143,15 +143,16 @@
 
   "milestone_status": {
     "M0": {
+      "status": "DONE",
       "percent_done": 100,
       "tasks_done": 5,
       "tasks_total": 5,
-      "next_action": "Wave 1 DONE — tutti i task PASS. Procedere con review e merge, poi sbloccare Wave 2 (M1)."
+      "next_action": "M0 COMPLETE — Wave 1 5/5 DONE, make test PASS. Wave 2 sbloccata."
     },
     "M1": {
-      "unlocked": false,
+      "unlocked": true,
       "requires": "M0 100% DONE",
-      "next_action": "Completare Wave 1 prima di pianificare Wave 2"
+      "next_action": "Pianificare Wave 2: TASK_m1_alert_engine, TASK_m1_aws_integration, TASK_m1_observability"
     },
     "M2": {
       "planned": false,
@@ -177,7 +178,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-03T15:00:00Z",
+    "last_updated": "2026-04-03T16:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_04_executor_agent_v3"
   }
