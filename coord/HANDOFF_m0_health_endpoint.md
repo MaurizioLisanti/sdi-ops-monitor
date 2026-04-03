@@ -4,7 +4,7 @@
 - task: TASK_m0_health_endpoint
 - status: DONE
 - correlation_id: 7e3f2a1b-4c8e-4a5b-b6c7-d8e9f0a1b2c3
-- run_id: run-20260402-001
+- run_id: run-20260402-002
 - created: 2026-04-02T12:00:00Z
 - branch: task/m0_health_endpoint
 - agent: claude-sonnet-4-6
@@ -25,6 +25,7 @@ php -l tests/TestCase/Controller/HealthControllerTest.php     → PASS — No sy
 php8.2 vendor/bin/phpunit tests/.../HealthControllerTest.php  → PASS — 2 tests, 6 assertions
 php8.2 vendor/bin/phpunit                                     → PASS — 3 tests, 8 assertions (suite completa)
 make test                                                     → FAIL [ENV_ERROR] — pre-esistente: vendor/bin/phpunit usa shebang PHP 8.3 senza pdo_mysql; il Makefile definisce PHP := php8.2 ma non lo usa nel target test
+git checkout main -- coord/STATE.json                         → PASS — revert P0 (Reviewer fix-1): STATE.json ripristinato a versione main
 ```
 
 ### Assunzioni fatte
