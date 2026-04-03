@@ -2,6 +2,7 @@
 <!-- Fonte di verità visiva. In caso di conflitto con STATE.json, STATE.json vince. -->
 <!-- Aggiorna dopo ogni HANDOFF DONE. -->
 <!-- [UPDATED: 2026-04-02 — Planner pass: aggiunti tabella ruoli completa, routing agenti, regole worktree, conflict detection, protocollo HANDOFF] -->
+<!-- [UPDATED: 2026-04-03 — Planner pass M1: Wave 2 sbloccata, 5 task M1 pianificati con dipendenze e parallelism matrix] -->
 
 ---
 
@@ -84,31 +85,54 @@ disponibilità dell'agente.
 
 ---
 
-## Wave 1 — M0 · Scaffold & Core Endpoints
+## Wave 1 — M0 · Scaffold & Core Endpoints ✅ DONE
 
 | Task | Titolo | Assegnatario | Status | Dipende da | Risk | Smoke test |
 |------|--------|-------------|--------|------------|------|------------|
-| TASK_scaffold_m0_boot | CakePHP 5 boot + migrazioni | Executor | TODO | — | MED | PENDING |
-| TASK_m0_health_endpoint | GET /health probe | Executor | TODO | scaffold_m0_boot | LOW | PENDING |
-| TASK_m0_metric_ingestion | POST /api/metrics | Executor | TODO | scaffold_m0_boot | MED | PENDING |
-| TASK_m0_dashboard | GET / dashboard | Executor | TODO | scaffold_m0_boot | LOW | PENDING |
-| TASK_m0_tests_smoke | PHPUnit smoke suite | Executor | TODO | health + ingestion + dashboard | LOW | PENDING |
+| TASK_scaffold_m0_boot | CakePHP 5 boot + migrazioni | Executor | **DONE** | — | MED | PENDING |
+| TASK_m0_health_endpoint | GET /health probe | Executor | **DONE** | scaffold_m0_boot | LOW | PENDING |
+| TASK_m0_metric_ingestion | POST /api/metrics | Executor | **DONE** | scaffold_m0_boot | MED | PENDING |
+| TASK_m0_dashboard | GET / dashboard | Executor | **DONE** | scaffold_m0_boot | LOW | PENDING |
+| TASK_m0_tests_smoke | PHPUnit smoke suite + Makefile fix | Executor | **DONE** | health + ingestion + dashboard | LOW | PENDING |
 
 ### Exit condition Wave 1
-Tutti i 5 task DONE + `make test` PASS + nessun rischio P:A/I:A aperto.
+✅ Soddisfatta — 5/5 DONE + `make test` PASS (5 tests, 19 assertions, exit 0).
 
 ---
 
-## Wave 2 — M1 · Alert Engine & AWS Integration
+## Wave 2 — M1 · Alert Engine, Auth & AWS Integration 🚀 IN PROGRESS
 
-| Task | Titolo | Assegnatario | Status | Dipende da | Risk | Smoke test |
-|------|--------|-------------|--------|------------|------|------------|
-| TASK_m1_alert_engine | Alert threshold engine | Executor | BLOCKED | Wave 1 DONE | HIGH | PENDING |
-| TASK_m1_aws_integration | AWS SNS/SQS ingestion | Executor | BLOCKED | Wave 1 DONE | HIGH | PENDING |
-| TASK_m1_observability | correlation_id + structured logs | Executor | BLOCKED | Wave 1 DONE | MED | PENDING |
+| # | Task | Titolo | Assegnatario | Status | Dipende da | Risk | Agente |
+|---|------|--------|-------------|--------|------------|------|--------|
+| 1 | TASK_m1_observability | correlation_id + JSON logging | Executor | **TODO** | — | MED | Claude |
+| 2 | TASK_m1_alert_engine | Alert threshold engine | Executor | BLOCKED | observability | HIGH | Codex |
+| 2 | TASK_m1_auth | Basic auth middleware | Executor | BLOCKED | observability | HIGH | Codex |
+| 3 | TASK_m1_aws_integration | AWS SNS signature validation | Executor | BLOCKED | alert_engine | HIGH | Codex |
+| 4 | TASK_m1_tests_m1 | PHPUnit M1 integration suite | Executor | BLOCKED | alert_engine + auth + aws | LOW | Claude |
+
+### Parallelism matrix Wave 2
+
+| Task A | Task B | Parallelo? | Motivo |
+|--------|--------|-----------|--------|
+| TASK_m1_observability | qualsiasi altro | NO | deve essere primo (Application.php) |
+| TASK_m1_alert_engine | TASK_m1_auth | **SÌ** | path disgiunti (Service/ vs Middleware/) |
+| TASK_m1_aws_integration | TASK_m1_auth | NO | aws dopo alert_engine (MetricsController) |
+| TASK_m1_tests_m1 | qualsiasi altro | NO | dipende da tutti e tre |
+
+### Sequenza di esecuzione Wave 2
+
+```
+Step 1 (seq):  TASK_m1_observability
+                      ↓
+Step 2 (par):  TASK_m1_alert_engine  ║  TASK_m1_auth
+                      ↓ (dopo alert_engine)
+Step 3 (seq):  TASK_m1_aws_integration
+                      ↓ (dopo tutti)
+Step 4 (seq):  TASK_m1_tests_m1
+```
 
 ### Exit condition Wave 2
-Tutti i 3 task DONE + `make test` PASS + SNS signature validation PASS.
+Tutti i 5 task DONE + `make test` PASS + SNS signature validation PASS.
 
 ---
 

@@ -15,7 +15,7 @@
     "label": "MED"
   },
 
-  "current_wave": 1,
+  "current_wave": 2,
   "total_waves": 2,
 
   "waves": {
@@ -94,49 +94,73 @@
     "wave_2": {
       "name": "M1 — Alert Engine & AWS Integration",
       "milestone": "M1",
-      "status": "BLOCKED",
+      "status": "TODO",
       "entry_condition": "Wave 1 DONE",
       "exit_condition": "Tutti i task DONE + make test PASS + SNS signature validation PASS",
       "tasks": {
+        "TASK_m1_observability": {
+          "status": "TODO",
+          "blocked_by": [],
+          "blocks": ["TASK_m1_alert_engine", "TASK_m1_auth"],
+          "risk_tier": "MED",
+          "assignee": "Executor",
+          "suggested_agent": "Claude",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "created": "2026-04-03T16:00:00Z",
+          "last_updated": "2026-04-03T16:00:00Z"
+        },
         "TASK_m1_alert_engine": {
           "status": "BLOCKED",
-          "blocked_by": ["wave_1"],
-          "blocks": [],
+          "blocked_by": ["TASK_m1_observability"],
+          "blocks": ["TASK_m1_aws_integration", "TASK_m1_tests_m1"],
           "risk_tier": "HIGH",
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
           "handoff": null,
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-02T00:00:00Z",
-          "last_updated": "2026-04-02T12:00:00Z"
+          "last_updated": "2026-04-03T16:00:00Z"
+        },
+        "TASK_m1_auth": {
+          "status": "BLOCKED",
+          "blocked_by": ["TASK_m1_observability"],
+          "blocks": ["TASK_m1_tests_m1"],
+          "risk_tier": "HIGH",
+          "assignee": "Executor",
+          "suggested_agent": "Codex o revisione umana",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "created": "2026-04-03T16:00:00Z",
+          "last_updated": "2026-04-03T16:00:00Z"
         },
         "TASK_m1_aws_integration": {
           "status": "BLOCKED",
-          "blocked_by": ["wave_1"],
-          "blocks": [],
+          "blocked_by": ["TASK_m1_alert_engine"],
+          "blocks": ["TASK_m1_tests_m1"],
           "risk_tier": "HIGH",
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
           "handoff": null,
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-02T00:00:00Z",
-          "last_updated": "2026-04-02T12:00:00Z"
+          "last_updated": "2026-04-03T16:00:00Z"
         },
-        "TASK_m1_observability": {
+        "TASK_m1_tests_m1": {
           "status": "BLOCKED",
-          "blocked_by": ["wave_1"],
+          "blocked_by": ["TASK_m1_alert_engine", "TASK_m1_auth", "TASK_m1_aws_integration"],
           "blocks": [],
-          "risk_tier": "MED",
+          "risk_tier": "LOW",
           "assignee": "Executor",
-          "suggested_agent": "Codex",
+          "suggested_agent": "Claude",
           "handoff": null,
           "smoke_test_after_merge": "PENDING",
-          "created": "2026-04-02T00:00:00Z",
-          "last_updated": "2026-04-02T12:00:00Z"
+          "created": "2026-04-03T16:00:00Z",
+          "last_updated": "2026-04-03T16:00:00Z"
         }
       },
       "integration_report": null,
-      "wave_started": null,
+      "wave_started": "2026-04-03T16:00:00Z",
       "wave_completed": null
     }
   },
@@ -151,8 +175,12 @@
     },
     "M1": {
       "unlocked": true,
+      "status": "IN_PROGRESS",
+      "percent_done": 0,
+      "tasks_done": 0,
+      "tasks_total": 5,
       "requires": "M0 100% DONE",
-      "next_action": "Pianificare Wave 2: TASK_m1_alert_engine, TASK_m1_aws_integration, TASK_m1_observability"
+      "next_action": "Avviare TASK_m1_observability (nessuna dipendenza M1) — assegnare a Executor"
     },
     "M2": {
       "planned": false,
@@ -178,8 +206,8 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-03T16:00:00Z",
+    "last_updated": "2026-04-03T17:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
-    "prompt_used": "PROMPT_04_executor_agent_v3"
+    "prompt_used": "PROMPT_03_planner_agent_v3"
   }
 }
