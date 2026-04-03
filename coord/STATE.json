@@ -75,16 +75,16 @@
           "last_updated": "2026-04-03T12:00:00Z"
         },
         "TASK_m0_tests_smoke": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": ["TASK_m0_health_endpoint", "TASK_m0_metric_ingestion", "TASK_m0_dashboard"],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
-          "handoff": null,
+          "handoff": "coord/HANDOFF_m0_tests_smoke.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-02T00:00:00Z",
-          "last_updated": "2026-04-02T12:00:00Z"
+          "last_updated": "2026-04-03T15:00:00Z"
         }
       },
       "integration_report": null,
@@ -143,10 +143,10 @@
 
   "milestone_status": {
     "M0": {
-      "percent_done": 60,
-      "tasks_done": 3,
+      "percent_done": 100,
+      "tasks_done": 5,
       "tasks_total": 5,
-      "next_action": "TASK_m0_dashboard DONE — resta: TASK_m0_tests_smoke (attende tutti e tre)"
+      "next_action": "Wave 1 DONE — tutti i task PASS. Procedere con review e merge, poi sbloccare Wave 2 (M1)."
     },
     "M1": {
       "unlocked": false,
@@ -177,7 +177,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-03T14:00:00Z",
+    "last_updated": "2026-04-03T15:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_04_executor_agent_v3"
   }
