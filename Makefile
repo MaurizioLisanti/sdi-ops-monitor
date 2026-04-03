@@ -35,10 +35,10 @@ seed: ## Run database seeds (fixtures)
 # ── Tests ────────────────────────────────────────────────────
 
 test: ## Run PHPUnit test suite
-	$(PHPUNIT) --colors=always
+	$(PHP) $(PHPUNIT) --colors=always
 
 test-coverage: ## Run tests with HTML coverage report
-	$(PHPUNIT) --coverage-html tmp/coverage
+	$(PHP) $(PHPUNIT) --coverage-html tmp/coverage
 
 # ── Code Quality ─────────────────────────────────────────────
 
