@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
 
@@ -86,5 +87,21 @@ class MetricsTable extends Table
             ->allowEmptyArray('tags');
 
         return $validator;
+    }
+
+    /**
+     * Custom finder: metrics recorded in the last 24 hours.
+     *
+     * Filters by recorded_at >= NOW() - 24h so that the caller can chain
+     * ->count() or ->all() without additional conditions.
+     *
+     * @param \Cake\ORM\Query\SelectQuery $query The base query to filter.
+     * @return \Cake\ORM\Query\SelectQuery The query restricted to the last 24 hours.
+     */
+    public function findRecent24h(SelectQuery $query): SelectQuery
+    {
+        $cutoff = new \DateTimeImmutable('-24 hours');
+
+        return $query->where(['recorded_at >=' => $cutoff]);
     }
 }
