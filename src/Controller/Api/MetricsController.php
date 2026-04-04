@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace App\Controller\Api;
 
 use App\Controller\AppController;
+use App\Service\AlertsService;
 use Cake\Http\Response;
+use Cake\Log\Log;
 
 /**
  * MetricsController — REST API for metric ingestion.
@@ -55,6 +57,26 @@ class MetricsController extends AppController
         $metric = $metricsTable->newEntity($this->request->getData());
 
         if ($metricsTable->save($metric)) {
+            // Evaluate alert thresholds on a best-effort basis.
+            // Any exception thrown by the service is caught and logged so that
+            // the 201 response is always returned even when alert creation fails.
+            $correlationId = (string)($this->request->getAttribute('correlation_id') ?? '');
+            try {
+                $alertsService = new AlertsService($this->fetchTable('Alerts'));
+                $alertsService->evaluate($metric, $correlationId);
+            } catch (\Throwable $e) {
+                Log::error(json_encode([
+                    'timestamp'      => date('c'),
+                    'level'          => 'error',
+                    'correlation_id' => $correlationId,
+                    'message'        => 'AlertsService::evaluate() failed — metric saved, alert skipped.',
+                    'context'        => [
+                        'exception' => $e->getMessage(),
+                        'metric_id' => $metric->id,
+                    ],
+                ], JSON_THROW_ON_ERROR));
+            }
+
             return $this->response
                 ->withStatus(201)
                 ->withType('application/json')

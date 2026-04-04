@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Database\Expression\FunctionExpression;
 use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
@@ -53,19 +54,30 @@ class AlertsTable extends Table
     }
 
     /**
-     * Custom finder: open alerts sorted by severity (most severe first).
+     * Custom finder: open alerts sorted by semantic severity (most severe first).
      *
-     * Filters to status = 'open' and sorts by severity DESC.
-     * Note: ordering is alphabetical DESC ('medium' > 'low' > 'high' > 'critical');
-     * semantic severity ordering via FIELD() is deferred to M1.
+     * Filters to status = 'open' and applies MySQL FIELD() to order rows by
+     * severity in the sequence critical → high → medium → low, so that the most
+     * actionable alerts appear at the top of any dashboard or API response.
+     *
+     * FIELD(col, v1, v2, ...) returns the 1-based position of col in the list;
+     * rows with col not in the list get position 0 and sort last. Ascending order
+     * therefore puts critical (position 1) first.
      *
      * @param \Cake\ORM\Query\SelectQuery $query The base query to filter.
-     * @return \Cake\ORM\Query\SelectQuery The query restricted to open alerts.
+     * @return \Cake\ORM\Query\SelectQuery The query restricted to open alerts, ordered by severity.
      */
     public function findOpen(SelectQuery $query): SelectQuery
     {
+        // FIELD(severity, 'critical', 'high', 'medium', 'low') ASC
+        // → critical=1, high=2, medium=3, low=4 → ascending gives critical first.
+        $severityOrder = new FunctionExpression(
+            'FIELD',
+            ['Alerts.severity' => 'identifier', "'critical'", "'high'", "'medium'", "'low'"]
+        );
+
         return $query
-            ->where(['status' => 'open'])
-            ->orderByDesc('severity');
+            ->where(['Alerts.status' => 'open'])
+            ->orderByAsc($severityOrder);
     }
 }
