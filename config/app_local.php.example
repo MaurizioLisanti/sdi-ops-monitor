@@ -34,4 +34,37 @@ return [
             'host' => 'localhost',
         ],
     ],
+
+    // Structured JSON logging — compatible with Kibana / ELK stack.
+    // Each log entry is emitted as a single-line JSON object. Fields include:
+    //   date, level, message, and any context array passed to Log::write().
+    // Consumers should inject the 'correlation_id' key in the context array
+    // (available via $request->getAttribute('correlation_id')) so that all
+    // records belonging to one HTTP transaction are filterable in Kibana.
+    //
+    // NOTE: do NOT edit config/app.php — only override in app_local.php.
+    'Log' => [
+        'default' => [
+            'className' => \Cake\Log\Engine\FileLog::class,
+            'path'      => LOGS,
+            'file'      => 'app',
+            'scopes'    => false,
+            'levels'    => ['notice', 'info', 'debug'],
+            'formatter' => [
+                'className' => \Cake\Log\Formatter\JsonFormatter::class,
+                'includeDate' => true,
+            ],
+        ],
+        'error' => [
+            'className' => \Cake\Log\Engine\FileLog::class,
+            'path'      => LOGS,
+            'file'      => 'error',
+            'scopes'    => false,
+            'levels'    => ['warning', 'error', 'critical', 'alert', 'emergency'],
+            'formatter' => [
+                'className' => \Cake\Log\Formatter\JsonFormatter::class,
+                'includeDate' => true,
+            ],
+        ],
+    ],
 ];
