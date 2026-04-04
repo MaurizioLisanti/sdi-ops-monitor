@@ -111,16 +111,16 @@
           "last_updated": "2026-04-04T00:00:00Z"
         },
         "TASK_m1_alert_engine": {
-          "status": "BLOCKED",
+          "status": "DONE",
           "blocked_by": ["TASK_m1_observability"],
           "blocks": ["TASK_m1_aws_integration", "TASK_m1_tests_m1"],
           "risk_tier": "HIGH",
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
-          "handoff": null,
-          "smoke_test_after_merge": "PENDING",
+          "handoff": "coord/HANDOFF_m1_alert_engine.md",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-02T00:00:00Z",
-          "last_updated": "2026-04-03T16:00:00Z"
+          "last_updated": "2026-04-04T01:00:00Z"
         },
         "TASK_m1_auth": {
           "status": "BLOCKED",
@@ -135,7 +135,7 @@
           "last_updated": "2026-04-03T16:00:00Z"
         },
         "TASK_m1_aws_integration": {
-          "status": "BLOCKED",
+          "status": "TODO",
           "blocked_by": ["TASK_m1_alert_engine"],
           "blocks": ["TASK_m1_tests_m1"],
           "risk_tier": "HIGH",
@@ -176,11 +176,11 @@
     "M1": {
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 20,
-      "tasks_done": 1,
+      "percent_done": 40,
+      "tasks_done": 2,
       "tasks_total": 5,
       "requires": "M0 100% DONE",
-      "next_action": "TASK_m1_observability DONE — avviare TASK_m1_alert_engine e TASK_m1_auth (ora sbloccati)"
+      "next_action": "TASK_m1_alert_engine DONE — avviare TASK_m1_aws_integration (sbloccato); TASK_m1_auth ancora in corso"
     },
     "M2": {
       "planned": false,
@@ -206,7 +206,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-04T00:00:00Z",
+    "last_updated": "2026-04-04T01:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
