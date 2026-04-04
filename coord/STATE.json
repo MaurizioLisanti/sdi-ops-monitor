@@ -99,16 +99,16 @@
       "exit_condition": "Tutti i task DONE + make test PASS + SNS signature validation PASS",
       "tasks": {
         "TASK_m1_observability": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": [],
           "blocks": ["TASK_m1_alert_engine", "TASK_m1_auth"],
           "risk_tier": "MED",
           "assignee": "Executor",
           "suggested_agent": "Claude",
-          "handoff": null,
-          "smoke_test_after_merge": "PENDING",
+          "handoff": "coord/HANDOFF_m1_observability.md",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-03T16:00:00Z",
-          "last_updated": "2026-04-03T16:00:00Z"
+          "last_updated": "2026-04-04T00:00:00Z"
         },
         "TASK_m1_alert_engine": {
           "status": "BLOCKED",
@@ -176,11 +176,11 @@
     "M1": {
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 0,
-      "tasks_done": 0,
+      "percent_done": 20,
+      "tasks_done": 1,
       "tasks_total": 5,
       "requires": "M0 100% DONE",
-      "next_action": "Avviare TASK_m1_observability (nessuna dipendenza M1) — assegnare a Executor"
+      "next_action": "TASK_m1_observability DONE — avviare TASK_m1_alert_engine e TASK_m1_auth (ora sbloccati)"
     },
     "M2": {
       "planned": false,
@@ -206,7 +206,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-03T17:00:00Z",
+    "last_updated": "2026-04-04T00:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
