@@ -8,6 +8,17 @@
 return [
     'debug' => (bool)env('APP_DEBUG', true),
 
+    // --- HTTP Basic Authentication (M1) ---
+    // Required environment variables for BasicAuthMiddleware.
+    // Set these in your Docker Compose, ECS task definition, or .env file.
+    // Never commit real values — this file is an example only.
+    //
+    //   APP_AUTH_USER      — username accepted by the application (e.g. "ops")
+    //   APP_AUTH_PASSWORD  — password accepted by the application (use a strong random value)
+    //
+    // If either variable is unset, ALL requests (except GET /health) will be
+    // denied with HTTP 401 — fail-closed design is intentional.
+
     'Security' => [
         'salt' => env('SECURITY_SALT', '__CHANGE_ME__'),
     ],
