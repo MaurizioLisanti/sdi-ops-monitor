@@ -10,18 +10,68 @@ use Cake\TestSuite\TestCase;
  * MetricsControllerTest — integration tests for POST /api/metrics.json.
  *
  * Covers:
- *   - Happy path: valid full payload → HTTP 201 + {"id": <int>}
- *   - Error path: missing required field "name" → HTTP 422 + {"errors": {...}}
+ *   - Happy path: valid full payload + valid credentials → HTTP 201 + {"id": <int>}
+ *   - Error path: missing required field "name" + valid credentials → HTTP 422 + {"errors": {...}}
  *
  * Assumption: MySQL 8.0 is up and the `metrics` table exists (migrations applied).
+ *
+ * Since M1 introduced BasicAuthMiddleware, all requests to POST /api/metrics
+ * must now supply valid HTTP Basic Auth credentials (A3 updated).
  */
 class MetricsControllerTest extends TestCase
 {
     use IntegrationTestTrait;
 
     /**
-     * Verify that POST /api/metrics.json with a complete valid payload returns
-     * HTTP 201 and a JSON body containing the new record's integer ID.
+     * Test credentials — set via environment, never hardcoded in production.
+     */
+    private const TEST_USER     = 'testuser';
+    private const TEST_PASSWORD = 'testpassword';
+
+    /**
+     * Inject test credentials into the environment before each test so that
+     * BasicAuthMiddleware can validate them.
+     *
+     * @return void
+     */
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        putenv('APP_AUTH_USER=' . self::TEST_USER);
+        putenv('APP_AUTH_PASSWORD=' . self::TEST_PASSWORD);
+        $_ENV['APP_AUTH_USER']     = self::TEST_USER;
+        $_ENV['APP_AUTH_PASSWORD'] = self::TEST_PASSWORD;
+    }
+
+    /**
+     * Remove injected test credentials from the environment after each test.
+     *
+     * @return void
+     */
+    protected function tearDown(): void
+    {
+        putenv('APP_AUTH_USER');
+        putenv('APP_AUTH_PASSWORD');
+        unset($_ENV['APP_AUTH_USER'], $_ENV['APP_AUTH_PASSWORD']);
+
+        parent::tearDown();
+    }
+
+    /**
+     * Build the Authorization header value for HTTP Basic Auth.
+     *
+     * @return string Ready-to-use Authorization header value.
+     */
+    private function basicAuthHeader(): string
+    {
+        return 'Basic ' . base64_encode(self::TEST_USER . ':' . self::TEST_PASSWORD);
+    }
+
+    /**
+     * Verify that POST /api/metrics.json with a complete valid payload and
+     * valid credentials returns HTTP 201 and a JSON body containing the new
+     * record's integer ID.
      *
      * @return void
      */
@@ -31,6 +81,13 @@ class MetricsControllerTest extends TestCase
         // a valid CSRF cookie and token into the integration test request so that
         // the middleware passes it through without requiring Application.php changes.
         $this->enableCsrfToken();
+
+        // Inject the Authorization header so BasicAuthMiddleware passes the request.
+        $this->configRequest([
+            'headers' => [
+                'Authorization' => $this->basicAuthHeader(),
+            ],
+        ]);
 
         $payload = [
             'source'      => 'aws-ec2-prod-01',
@@ -54,13 +111,21 @@ class MetricsControllerTest extends TestCase
 
     /**
      * Verify that POST /api/metrics.json with a payload missing the required
-     * field "name" returns HTTP 422 and a JSON body with a non-empty "errors" map.
+     * field "name" and valid credentials returns HTTP 422 and a JSON body with
+     * a non-empty "errors" map.
      *
      * @return void
      */
     public function testAddReturns422OnInvalidPayload(): void
     {
         $this->enableCsrfToken();
+
+        // Inject the Authorization header so BasicAuthMiddleware passes the request.
+        $this->configRequest([
+            'headers' => [
+                'Authorization' => $this->basicAuthHeader(),
+            ],
+        ]);
 
         // "name", "value", and "recorded_at" are intentionally omitted to trigger
         // multiple validation errors and confirm they are all surfaced in the response.
