@@ -130,9 +130,9 @@
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
           "handoff": "coord/HANDOFF_m1_auth.md",
-          "smoke_test_after_merge": "PENDING",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-03T16:00:00Z",
-          "last_updated": "2026-04-05T00:00:00Z"
+          "last_updated": "2026-04-05T09:00:00Z"
         },
         "TASK_m1_aws_integration": {
           "status": "TODO",
@@ -180,7 +180,7 @@
       "tasks_done": 3,
       "tasks_total": 5,
       "requires": "M0 100% DONE",
-      "next_action": "TASK_m1_auth DONE — avviare TASK_m1_aws_integration (sbloccato); TASK_m1_tests_m1 attende TASK_m1_aws_integration"
+      "next_action": "TASK_m1_auth DONE (smoke PASS) — avviare TASK_m1_aws_integration (sbloccato); TASK_m1_tests_m1 attende TASK_m1_aws_integration"
     },
     "M2": {
       "planned": false,
@@ -206,7 +206,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-04T01:00:00Z",
+    "last_updated": "2026-04-05T09:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
