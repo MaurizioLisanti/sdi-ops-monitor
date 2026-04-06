@@ -135,19 +135,19 @@
           "last_updated": "2026-04-05T09:00:00Z"
         },
         "TASK_m1_aws_integration": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": ["TASK_m1_alert_engine"],
           "blocks": ["TASK_m1_tests_m1"],
           "risk_tier": "HIGH",
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
-          "handoff": null,
-          "smoke_test_after_merge": "PENDING",
+          "handoff": "coord/HANDOFF_m1_aws_integration.md",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-02T00:00:00Z",
-          "last_updated": "2026-04-03T16:00:00Z"
+          "last_updated": "2026-04-06T00:00:00Z"
         },
         "TASK_m1_tests_m1": {
-          "status": "BLOCKED",
+          "status": "TODO",
           "blocked_by": ["TASK_m1_alert_engine", "TASK_m1_auth", "TASK_m1_aws_integration"],
           "blocks": [],
           "risk_tier": "LOW",
@@ -176,11 +176,11 @@
     "M1": {
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 60,
-      "tasks_done": 3,
+      "percent_done": 80,
+      "tasks_done": 4,
       "tasks_total": 5,
       "requires": "M0 100% DONE",
-      "next_action": "TASK_m1_auth DONE (smoke PASS) — avviare TASK_m1_aws_integration (sbloccato); TASK_m1_tests_m1 attende TASK_m1_aws_integration"
+      "next_action": "TASK_m1_aws_integration DONE (smoke PASS) — avviare TASK_m1_tests_m1 (sbloccato)"
     },
     "M2": {
       "planned": false,
@@ -206,7 +206,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-05T09:00:00Z",
+    "last_updated": "2026-04-06T00:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
