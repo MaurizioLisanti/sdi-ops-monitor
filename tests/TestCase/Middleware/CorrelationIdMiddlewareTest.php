@@ -82,7 +82,7 @@ class CorrelationIdMiddlewareTest extends TestCase
      *
      * @return void
      */
-    public function testCorrelationIdIsEchoedWhenProvidedByClient(): void
+    public function testHeaderPropagated(): void
     {
         $clientId = 'test-uuid-1234';
 
@@ -121,7 +121,7 @@ class CorrelationIdMiddlewareTest extends TestCase
      *
      * @return void
      */
-    public function testCorrelationIdIsGeneratedWhenAbsentFromRequest(): void
+    public function testHeaderGeneratedIfAbsent(): void
     {
         $request = new ServerRequest([
             'environment' => [
