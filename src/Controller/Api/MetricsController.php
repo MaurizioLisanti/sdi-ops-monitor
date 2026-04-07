@@ -128,10 +128,13 @@ class MetricsController extends AppController
         $validator = new SnsSignatureValidator();
 
         if ($messageType === 'SubscriptionConfirmation') {
-            Log::info('SNS SubscriptionConfirmation received', [
+            Log::info(json_encode([
+                'timestamp'      => date('c'),
+                'level'          => 'info',
                 'correlation_id' => $correlationId,
-                'topic_arn'      => $payload['TopicArn'] ?? null,
-            ]);
+                'message'        => 'SNS SubscriptionConfirmation received.',
+                'context'        => ['topic_arn' => $payload['TopicArn'] ?? null],
+            ], JSON_THROW_ON_ERROR));
 
             $validator->handleSubscriptionConfirmation($payload);
 
@@ -142,10 +145,13 @@ class MetricsController extends AppController
             $headers = $this->request->getHeaders();
 
             if (!$validator->validate($headers, $rawBody)) {
-                Log::warning('SNS Notification rejected: signature validation failed', [
+                Log::warning(json_encode([
+                    'timestamp'      => date('c'),
+                    'level'          => 'warning',
                     'correlation_id' => $correlationId,
-                    'topic_arn'      => $payload['TopicArn'] ?? null,
-                ]);
+                    'message'        => 'SNS Notification rejected: signature validation failed.',
+                    'context'        => ['topic_arn' => $payload['TopicArn'] ?? null],
+                ], JSON_THROW_ON_ERROR));
 
                 return $this->jsonResponse(400, ['error' => 'Invalid SNS signature']);
             }
@@ -159,20 +165,26 @@ class MetricsController extends AppController
                 }
             }
 
-            Log::info('SNS Notification accepted — ingesting metric', [
+            Log::info(json_encode([
+                'timestamp'      => date('c'),
+                'level'          => 'info',
                 'correlation_id' => $correlationId,
-                'topic_arn'      => $payload['TopicArn'] ?? null,
-            ]);
+                'message'        => 'SNS Notification accepted — ingesting metric.',
+                'context'        => ['topic_arn' => $payload['TopicArn'] ?? null],
+            ], JSON_THROW_ON_ERROR));
 
             return $this->ingestMetric($messageData, $correlationId);
         }
 
         // Unrecognised SNS message type — acknowledge and ignore (fail-open for
         // future SNS message types that do not carry metric data).
-        Log::info('SNS message type ignored', [
+        Log::info(json_encode([
+            'timestamp'      => date('c'),
+            'level'          => 'info',
             'correlation_id' => $correlationId,
-            'message_type'   => $messageType,
-        ]);
+            'message'        => 'SNS message type not handled — acknowledged and ignored.',
+            'context'        => ['message_type' => $messageType],
+        ], JSON_THROW_ON_ERROR));
 
         return $this->jsonResponse(200, ['status' => 'ok']);
     }

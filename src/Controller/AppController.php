@@ -8,8 +8,10 @@ use Cake\Controller\Controller;
 /**
  * AppController — base controller.
  *
- * @skeleton M0
- * TODO (Planner): add auth component, rate-limit middleware, correlation_id injection.
+ * Auth (BasicAuthMiddleware) and correlation_id propagation (CorrelationIdMiddleware)
+ * are handled at the middleware layer since M1.
+ *
+ * TODO: add rate-limit middleware.
  */
 class AppController extends Controller
 {
