@@ -100,15 +100,15 @@ disponibilità dell'agente.
 
 ---
 
-## Wave 2 — M1 · Alert Engine, Auth & AWS Integration 🚀 IN PROGRESS
+## Wave 2 — M1 · Alert Engine, Auth & AWS Integration ✅ DONE
 
 | # | Task | Titolo | Assegnatario | Status | Dipende da | Risk | Agente |
 |---|------|--------|-------------|--------|------------|------|--------|
-| 1 | TASK_m1_observability | correlation_id + JSON logging | Executor | **TODO** | — | MED | Claude |
-| 2 | TASK_m1_alert_engine | Alert threshold engine | Executor | BLOCKED | observability | HIGH | Codex |
-| 2 | TASK_m1_auth | Basic auth middleware | Executor | BLOCKED | observability | HIGH | Codex |
-| 3 | TASK_m1_aws_integration | AWS SNS signature validation | Executor | BLOCKED | alert_engine | HIGH | Codex |
-| 4 | TASK_m1_tests_m1 | PHPUnit M1 integration suite | Executor | BLOCKED | alert_engine + auth + aws | LOW | Claude |
+| 1 | TASK_m1_observability | correlation_id + JSON logging | Executor | **DONE** | — | MED | Claude |
+| 2 | TASK_m1_alert_engine | Alert threshold engine | Executor | **DONE** | observability | HIGH | Codex |
+| 2 | TASK_m1_auth | Basic auth middleware | Executor | **DONE** | observability | HIGH | Codex |
+| 3 | TASK_m1_aws_integration | AWS SNS signature validation | Executor | **DONE** | alert_engine | HIGH | Codex |
+| 4 | TASK_m1_tests_m1 | PHPUnit M1 integration suite | Executor | **DONE** | alert_engine + auth + aws | LOW | Claude |
 
 ### Parallelism matrix Wave 2
 
@@ -132,7 +132,47 @@ Step 4 (seq):  TASK_m1_tests_m1
 ```
 
 ### Exit condition Wave 2
-Tutti i 5 task DONE + `make test` PASS + SNS signature validation PASS.
+✅ Soddisfatta — 5/5 DONE + `make test` PASS (17 tests, 48 assertions, exit 0) + SNS signature validation PASS.
+Vedere `coord/INTEGRATION_REPORT_wave2.md` per dettaglio. Avvertimenti non bloccanti: W1, W2, W3 → candidate TASK M2.
+
+---
+
+## Wave 3 — M2 · Fix W1/W2/W3 + SQS Scheduler + Log Viewer + Scenario Simulator 🚀 IN PROGRESS
+
+<!-- [UPDATED: 2026-04-07 — Planner pass M2: 6 task pianificati] -->
+
+| # | Task | Titolo | Assegnatario | Status | Dipende da | Risk | Agente |
+|---|------|--------|-------------|--------|------------|------|--------|
+| 1 | TASK_m2_fix_log_consistency | Fix W1 log format + W3 stale TODO | Executor | **TODO** | — | LOW | Claude |
+| 1 | TASK_m2_fix_sns_e2e_test | W2: integration tests SNS pipeline | Executor | **TODO** | — | LOW | Claude |
+| 1 | TASK_m2_dashboard_severity | Dashboard semaforo severity-based | Executor | **TODO** | — | LOW | Claude |
+| 2 | TASK_m2_sqs_scheduler | AWS SQS polling Command | Executor | **TODO** | — | HIGH | Codex |
+| 2 | TASK_m2_log_viewer | Log Viewer web UI | Executor | BLOCKED | fix_log_consistency | MED | Codex |
+| 3 | TASK_m2_scenario_simulator | SDI/FatturaPA scenario simulator | Executor | BLOCKED | sqs_scheduler + log_viewer | MED | Codex |
+
+### Parallelism matrix Wave 3
+
+| Task A | Task B | Parallelo? | Motivo |
+|--------|--------|-----------|--------|
+| TASK_m2_fix_log_consistency | TASK_m2_fix_sns_e2e_test | **SÌ** | path disgiunti (src/Controller/Api/ vs tests/) — ATTENZIONE: entrambi toccano MetricsController.php — assegnare allo stesso agente in sequenza o gestire merge |
+| TASK_m2_fix_log_consistency | TASK_m2_dashboard_severity | **SÌ** | path disgiunti (MetricsController vs DashboardController) |
+| TASK_m2_fix_sns_e2e_test | TASK_m2_dashboard_severity | **SÌ** | path disgiunti (tests/Controller/ vs DashboardController) |
+| TASK_m2_sqs_scheduler | TASK_m2_log_viewer | **SÌ** | path disgiunti (src/Command/ vs src/Controller/LogViewer/) |
+| TASK_m2_log_viewer | TASK_m2_scenario_simulator | NO | entrambi toccano Application.php — seriale obbligatorio |
+| TASK_m2_sqs_scheduler | TASK_m2_scenario_simulator | NO | scenario_simulator BLOCKED_BY sqs_scheduler |
+
+### Sequenza di esecuzione Wave 3
+
+```
+Step 1 (par):  TASK_m2_fix_log_consistency  ║  TASK_m2_fix_sns_e2e_test  ║  TASK_m2_dashboard_severity
+                      ↓ (dopo fix_log_consistency)
+Step 2 (par):  TASK_m2_sqs_scheduler  ║  TASK_m2_log_viewer
+                      ↓ (dopo sqs_scheduler + log_viewer)
+Step 3 (seq):  TASK_m2_scenario_simulator
+```
+
+### Exit condition Wave 3
+Tutti i 6 task DONE + `make test` PASS + SQS dry-run PASS + scenario simulator PASS.
 
 ---
 
