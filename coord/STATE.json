@@ -171,14 +171,14 @@
       "exit_condition": "Tutti i task DONE + make test PASS + SQS polling PASS + scenario simulator PASS",
       "tasks": {
         "TASK_m2_fix_log_consistency": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": [],
           "blocks": ["TASK_m2_log_viewer"],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
           "handoff": "coord/HANDOFF_m2_fix_log_consistency.md",
-          "smoke_test_after_merge": "PENDING",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-07T00:00:00Z",
           "last_updated": "2026-04-07T00:00:00Z"
         },
@@ -219,7 +219,7 @@
           "last_updated": "2026-04-07T00:00:00Z"
         },
         "TASK_m2_log_viewer": {
-          "status": "BLOCKED",
+          "status": "TODO",
           "blocked_by": ["TASK_m2_fix_log_consistency"],
           "blocks": ["TASK_m2_scenario_simulator"],
           "risk_tier": "MED",
@@ -274,7 +274,7 @@
       "tasks_done": 0,
       "tasks_total": 6,
       "requires": "M1 DONE",
-      "next_action": "M2 IN PROGRESS — Step 1: assegna in parallelo TASK_m2_fix_log_consistency, TASK_m2_fix_sns_e2e_test, TASK_m2_dashboard_severity (path disgiunti, tutti LOW risk)"
+      "next_action": "M2 IN PROGRESS — TASK_m2_fix_log_consistency DONE. Assegna: TASK_m2_fix_sns_e2e_test e TASK_m2_dashboard_severity (Step 1 rimanenti). TASK_m2_log_viewer ora sbloccato (TODO)."
     }
   },
 
