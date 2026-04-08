@@ -195,16 +195,16 @@
           "last_updated": "2026-04-08T00:00:00Z"
         },
         "TASK_m2_dashboard_severity": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": [],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
           "handoff": "coord/HANDOFF_m2_dashboard_severity.md",
-          "smoke_test_after_merge": "PENDING",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-07T00:00:00Z",
-          "last_updated": "2026-04-07T00:00:00Z"
+          "last_updated": "2026-04-08T01:00:00Z"
         },
         "TASK_m2_sqs_scheduler": {
           "status": "TODO",
@@ -270,11 +270,11 @@
       "planned": true,
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 33,
-      "tasks_done": 2,
+      "percent_done": 50,
+      "tasks_done": 3,
       "tasks_total": 6,
       "requires": "M1 DONE",
-      "next_action": "M2 IN PROGRESS — 2/6 DONE (fix_log_consistency, fix_sns_e2e_test). Assegna: TASK_m2_dashboard_severity (Step 1 ultimo rimanente). Step 2: TASK_m2_sqs_scheduler + TASK_m2_log_viewer (sbloccato)."
+      "next_action": "M2 IN PROGRESS — 3/6 DONE (Step 1 completo). Step 2: assegna TASK_m2_sqs_scheduler (HIGH) + TASK_m2_log_viewer (MED, sbloccato) in parallelo."
     }
   },
 
