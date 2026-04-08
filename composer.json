@@ -6,7 +6,8 @@
         "php": ">=8.2",
         "cakephp/cakephp": "^5.0",
         "cakephp/migrations": "^5.0",
-        "cakephp/bake": "^3.0"
+        "cakephp/bake": "^3.0",
+        "aws/aws-sdk-php": "^3.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.5",

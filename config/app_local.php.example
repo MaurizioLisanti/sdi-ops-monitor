@@ -40,6 +40,21 @@ return [
         ],
     ],
 
+    // --- AWS SQS Scheduler (M2) ---
+    // Set via environment variables — never hardcode credentials here.
+    // The SqsPollCommand reads these at runtime; no PHP config key is needed.
+    //
+    //   AWS_SQS_QUEUE_URL=https://sqs.<region>.amazonaws.com/<account>/<queue-name>
+    //   AWS_REGION=eu-west-1
+    //   AWS_ACCESS_KEY_ID=<from IAM role or env>      (omit when using instance role)
+    //   AWS_SECRET_ACCESS_KEY=<from IAM role or env>  (omit when using instance role)
+    //   AWS_SESSION_TOKEN=<from STS for temporary credentials> (optional)
+    //
+    // Production: inject via ECS task definition environment or EC2 instance role.
+    // Local dev:  export the variables in your shell before running bin/cake sqs_poll.
+    // Cron example (every 60 s):
+    //   * * * * * www-data /var/www/html/bin/cake sqs_poll >> /var/log/sqs_poll.log 2>&1
+
     'EmailTransport' => [
         'default' => [
             'host' => 'localhost',
