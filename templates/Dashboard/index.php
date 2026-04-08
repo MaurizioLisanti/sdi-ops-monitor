@@ -4,10 +4,12 @@
  *
  * View variables injected by DashboardController::index():
  *
- * @var \App\View\AppView $this
- * @var int    $metricsCount  Number of metric events recorded in the last 24 hours.
- * @var array  $openAlerts    Open alerts (Alert entities) sorted by severity DESC.
- * @var string $overallStatus Traffic-light status: 'green' | 'yellow' | 'red'.
+ * @var \App\View\AppView        $this
+ * @var int                      $metricsCount     Number of metric events recorded in the last 24 hours.
+ * @var array                    $openAlerts       Open alerts (Alert entities) sorted by severity DESC.
+ * @var string                   $overallStatus    Traffic-light status: 'green' | 'yellow' | 'red'.
+ * @var string|null              $highestSeverity  Highest severity among open alerts, or null when none.
+ * @var array<string,int>        $alertsBySeverity Per-level counts: ['critical'=>int,'high'=>int,...].
  */
 
 // Map overall status to Bootstrap badge CSS classes and display labels.
@@ -29,10 +31,11 @@ $severityCss = [
 
 $alertCount = count($openAlerts);
 
-// Determine count badge class for the open-alerts summary card.
-if ($alertCount >= 5) {
+// Derive count badge colour from severity-based overallStatus, not raw count.
+// A single critical alert must show red even if the total count is 1.
+if ($overallStatus === 'red') {
     $alertCountCss = 'text-danger fw-bold';
-} elseif ($alertCount > 0) {
+} elseif ($overallStatus === 'yellow') {
     $alertCountCss = 'text-warning fw-bold';
 } else {
     $alertCountCss = 'text-success fw-bold';
@@ -99,6 +102,31 @@ if ($alertCount >= 5) {
 
     </div>
     <!-- /.row summary cards -->
+
+    <!-- ── Severity breakdown (hidden when no open alerts) ── -->
+    <?php if ($alertCount > 0): ?>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header d-flex align-items-center gap-2">
+            <strong>Severity Breakdown</strong>
+            <span class="badge bg-secondary"><?= h((string)$alertCount) ?> total</span>
+        </div>
+        <div class="card-body py-3">
+            <div class="d-flex flex-wrap gap-3">
+                <?php foreach (['critical', 'high', 'medium', 'low'] as $level): ?>
+                    <?php if ($alertsBySeverity[$level] > 0): ?>
+                    <div class="d-flex align-items-center gap-2 rounded border px-3 py-2">
+                        <span class="badge fs-5 <?= h($severityCss[$level] ?? 'bg-secondary') ?>">
+                            <?= h((string)$alertsBySeverity[$level]) ?>
+                        </span>
+                        <span class="fw-semibold"><?= h(ucfirst($level)) ?></span>
+                    </div>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+    <!-- /.severity breakdown -->
 
     <!-- ── Open alerts table ── -->
     <div class="card shadow-sm">

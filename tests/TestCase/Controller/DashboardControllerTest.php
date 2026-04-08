@@ -60,6 +60,16 @@ class DashboardControllerTest extends TestCase
     }
 
     /**
+     * Build the Authorization header value for HTTP Basic Auth.
+     *
+     * @return string Ready-to-use Authorization header value.
+     */
+    private function basicAuthHeader(): string
+    {
+        return 'Basic ' . base64_encode(self::TEST_USER . ':' . self::TEST_PASSWORD);
+    }
+
+    /**
      * Verify that GET / with valid HTTP Basic Auth credentials returns HTTP 200
      * and renders a page containing the application name "SDI Ops Monitor".
      *
@@ -73,7 +83,7 @@ class DashboardControllerTest extends TestCase
         // Inject the Authorization header so BasicAuthMiddleware passes the request.
         $this->configRequest([
             'headers' => [
-                'Authorization' => 'Basic ' . base64_encode(self::TEST_USER . ':' . self::TEST_PASSWORD),
+                'Authorization' => $this->basicAuthHeader(),
             ],
         ]);
 
@@ -83,5 +93,41 @@ class DashboardControllerTest extends TestCase
         $this->assertResponseOk();
         $this->assertResponseContains('SDI Ops Monitor');
         $this->assertContentType('text/html');
+    }
+
+    /**
+     * Verify the severity-based traffic-light behaviour when the alerts table is empty.
+     *
+     * With zero open alerts, DashboardController must derive overallStatus = 'green',
+     * the page must render the 'OK' status label, and the severity breakdown section
+     * must be absent (it is only shown when open alerts exist).
+     *
+     * [TEST_DEFERRED: red/yellow severity paths]
+     * Testing overallStatus = 'red' (critical/high present) and 'yellow' (medium/low
+     * only) requires inserting Alert fixtures with specific severity values. Deferred
+     * to a fixture-based suite in M2+. See HANDOFF_m2_dashboard_severity.md.
+     *
+     * @return void
+     */
+    public function testIndexShowsGreenStatusWhenNoAlerts(): void
+    {
+        $this->configRequest([
+            'headers' => [
+                'Authorization' => $this->basicAuthHeader(),
+            ],
+        ]);
+
+        $this->get('/');
+
+        $this->assertResponseOk();
+
+        // With no open alerts, overallStatus = 'green' → the badge label must be 'OK'.
+        $this->assertResponseContains('OK');
+
+        // The severity breakdown card must not appear when there are no open alerts.
+        $this->assertResponseNotContains('Severity Breakdown');
+
+        // The healthy state message in the alerts section must be rendered.
+        $this->assertResponseContains('No open alerts — system is healthy.');
     }
 }
