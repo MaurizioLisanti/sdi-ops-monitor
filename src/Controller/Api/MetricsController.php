@@ -125,7 +125,7 @@ class MetricsController extends AppController
             return $this->jsonResponse(400, ['error' => 'Invalid SNS payload']);
         }
 
-        $validator = new SnsSignatureValidator();
+        $validator = $this->createSnsValidator();
 
         if ($messageType === 'SubscriptionConfirmation') {
             Log::info(json_encode([
@@ -187,6 +187,21 @@ class MetricsController extends AppController
         ], JSON_THROW_ON_ERROR));
 
         return $this->jsonResponse(200, ['status' => 'ok']);
+    }
+
+    /**
+     * Create and return an SnsSignatureValidator instance.
+     *
+     * Extracted from handleSnsRequest() to allow test subclasses to override
+     * this method and inject a stub validator, enabling controller-level HTTP
+     * tests without real network calls. Production code always returns the
+     * default validator (uses file_get_contents with TLS verification).
+     *
+     * @return \App\Service\SnsSignatureValidator
+     */
+    protected function createSnsValidator(): SnsSignatureValidator
+    {
+        return new SnsSignatureValidator();
     }
 
     /**

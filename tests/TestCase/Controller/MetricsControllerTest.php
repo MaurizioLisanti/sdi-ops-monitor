@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use Cake\Http\Middleware\CsrfProtectionMiddleware;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -66,6 +67,42 @@ class MetricsControllerTest extends TestCase
     private function basicAuthHeader(): string
     {
         return 'Basic ' . base64_encode(self::TEST_USER . ':' . self::TEST_PASSWORD);
+    }
+
+    /**
+     * Configure the integration test request for an AWS SNS HTTP call.
+     *
+     * When the POST body is a raw JSON string (as SNS sends it), CakePHP's
+     * IntegrationTestTrait skips _addTokens() — the CSRF token is never injected
+     * automatically. This helper creates a valid CSRF token via the middleware, sets
+     * it as both the cookie and the X-CSRF-Token header so that CsrfProtectionMiddleware
+     * validation passes, and wires the remaining SNS-specific headers.
+     *
+     * @param string $messageType Value of X-Amz-Sns-Message-Type (e.g. "Notification").
+     * @return void
+     */
+    private function configureSnsRequest(string $messageType): void
+    {
+        // Create a cryptographically valid token — _verifyToken() checks the HMAC,
+        // so we cannot use an arbitrary string; we must use the middleware factory.
+        $csrfMiddleware = new CsrfProtectionMiddleware();
+        $csrfToken = $csrfMiddleware->createToken();
+
+        // Set the cookie so CsrfProtectionMiddleware finds it in the request.
+        $this->cookie('csrfToken', $csrfToken);
+
+        $this->configRequest([
+            'headers' => [
+                'Authorization'          => $this->basicAuthHeader(),
+                'X-Amz-Sns-Message-Type' => $messageType,
+                // JSON content type so BodyParserMiddleware decodes the body;
+                // handleSnsRequest() then rewinds the stream to re-read raw JSON.
+                'Content-Type'           => 'application/json',
+                // Pass the same token in the header — unsaltToken() returns it
+                // unchanged (not double-salted length), so hash_equals passes.
+                'X-CSRF-Token'           => $csrfToken,
+            ],
+        ]);
     }
 
     /**
@@ -144,4 +181,83 @@ class MetricsControllerTest extends TestCase
         // Confirm that "name" is among the reported errors.
         $this->assertArrayHasKey('name', $body['errors']);
     }
+
+    /**
+     * Verify that a SNS Notification with a non-Amazon SigningCertURL is rejected
+     * with HTTP 400 and an "Invalid SNS signature" error body.
+     *
+     * The domain check in SnsSignatureValidator is purely synchronous: evil.com is
+     * rejected against the Amazon allowlist before any outbound network call is made,
+     * so this test requires no mocking and makes no real HTTP requests.
+     *
+     * @return void
+     */
+    public function testSnsNotificationWithNonAmazonCertUrlReturns400(): void
+    {
+        $this->configureSnsRequest('Notification');
+
+        $snsBody = json_encode([
+            'Type'             => 'Notification',
+            'MessageId'        => 'test-msg-001',
+            'TopicArn'         => 'arn:aws:sns:us-east-1:123456789012:test-topic',
+            'Message'          => '{"source":"test-host","name":"cpu_usage","value":50}',
+            'Timestamp'        => '2026-04-08T10:00:00.000Z',
+            // evil.com is not in SnsSignatureValidator::ALLOWED_DOMAINS — rejected synchronously.
+            'SigningCertURL'   => 'https://evil.com/cert.pem',
+            'Signature'        => 'dGVzdA==',
+            'SignatureVersion' => '1',
+        ], JSON_THROW_ON_ERROR);
+
+        $this->post('/api/metrics.json', $snsBody);
+
+        $this->assertResponseCode(400);
+        $this->assertContentType('application/json');
+
+        $body = json_decode((string)$this->_response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertArrayHasKey('error', $body);
+        $this->assertSame('Invalid SNS signature', $body['error']);
+    }
+
+    /**
+     * Verify that a SNS SubscriptionConfirmation without a SubscribeURL returns
+     * HTTP 200 with {"status": "ok"} and no outbound network call is made.
+     *
+     * SnsSignatureValidator::handleSubscriptionConfirmation() returns early when
+     * SubscribeURL is absent, so this path is a safe no-op that needs no mocking.
+     *
+     * @return void
+     */
+    public function testSnsSubscriptionConfirmationReturns200(): void
+    {
+        $this->configureSnsRequest('SubscriptionConfirmation');
+
+        // SubscribeURL is intentionally omitted: handleSubscriptionConfirmation() returns
+        // early when the field is empty, so no outbound HTTP request is triggered.
+        $snsBody = json_encode([
+            'Type'      => 'SubscriptionConfirmation',
+            'MessageId' => 'test-sub-001',
+            'TopicArn'  => 'arn:aws:sns:us-east-1:123456789012:test-topic',
+            'Message'   => 'You have chosen to subscribe to the topic.',
+            'Timestamp' => '2026-04-08T10:00:00.000Z',
+            'Token'     => 'test-token-abc123',
+        ], JSON_THROW_ON_ERROR);
+
+        $this->post('/api/metrics.json', $snsBody);
+
+        $this->assertResponseCode(200);
+        $this->assertContentType('application/json');
+
+        $body = json_decode((string)$this->_response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+        $this->assertArrayHasKey('status', $body);
+        $this->assertSame('ok', $body['status']);
+    }
+
+    // [DEFERRED: DI container M2+]
+    // testSnsNotificationWithInvalidSignatureReturns400 — deferred because injecting a
+    // custom SnsSignatureValidator stub (httpGet returning false) into MetricsController at
+    // runtime via CakePHP 5 IntegrationTestTrait requires either:
+    //   (a) binding MetricsController in Application::services() — forbidden path, or
+    //   (b) a custom ControllerFactory registered in Application — forbidden path.
+    // The protected factory method createSnsValidator() already provides the extension
+    // point; unblock this test in M2+ by wiring DI in Application::services().
 }
