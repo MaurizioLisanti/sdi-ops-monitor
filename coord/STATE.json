@@ -219,7 +219,7 @@
           "last_updated": "2026-04-08T15:42:00Z"
         },
         "TASK_m2_log_viewer": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": ["TASK_m2_fix_log_consistency"],
           "blocks": ["TASK_m2_scenario_simulator"],
           "risk_tier": "MED",
@@ -228,7 +228,7 @@
           "handoff": "coord/HANDOFF_m2_log_viewer.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-07T00:00:00Z",
-          "last_updated": "2026-04-07T00:00:00Z"
+          "last_updated": "2026-04-08T16:32:00Z"
         },
         "TASK_m2_scenario_simulator": {
           "status": "BLOCKED",
@@ -270,11 +270,11 @@
       "planned": true,
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 67,
-      "tasks_done": 4,
+      "percent_done": 83,
+      "tasks_done": 5,
       "tasks_total": 6,
       "requires": "M1 DONE",
-      "next_action": "M2 IN PROGRESS — 4/6 DONE. Step 3: assegna TASK_m2_log_viewer (MED). Poi TASK_m2_scenario_simulator si sblocca (richiede entrambi sqs_scheduler + log_viewer DONE)."
+      "next_action": "M2 IN PROGRESS — 5/6 DONE. TASK_m2_log_viewer DONE. TASK_m2_scenario_simulator ora sbloccato (entrambi sqs_scheduler + log_viewer DONE)."
     }
   },
 

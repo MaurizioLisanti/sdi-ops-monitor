@@ -30,6 +30,7 @@ use Cake\Http\MiddlewareQueue;
 use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
+use Cake\Routing\RouteBuilder;
 
 /**
  * Application setup class.
@@ -100,6 +101,25 @@ class Application extends BaseApplication
             ]));
 
         return $middlewareQueue;
+    }
+
+    /**
+     * Register application routes, extending the default config/routes.php definitions.
+     *
+     * Calls parent::routes() first to load all routes declared in config/routes.php,
+     * then appends the /logs route for the LogViewerController. The route is automatically
+     * protected by BasicAuthMiddleware which sits ahead of RoutingMiddleware in the stack.
+     *
+     * @param \Cake\Routing\RouteBuilder $routes The route builder provided by RoutingMiddleware.
+     * @return void
+     */
+    public function routes(RouteBuilder $routes): void
+    {
+        parent::routes($routes);
+
+        // Log Viewer — SRE-facing read-only view of structured JSON logs.
+        // BasicAuthMiddleware enforces authentication for this path automatically.
+        $routes->connect('/logs', ['controller' => 'LogViewer', 'action' => 'index']);
     }
 
     /**
