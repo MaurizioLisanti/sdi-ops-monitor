@@ -214,9 +214,9 @@
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
           "handoff": "coord/HANDOFF_m2_sqs_scheduler.md",
-          "smoke_test_after_merge": "PENDING",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-07T00:00:00Z",
-          "last_updated": "2026-04-08T15:30:00Z"
+          "last_updated": "2026-04-08T15:42:00Z"
         },
         "TASK_m2_log_viewer": {
           "status": "TODO",
