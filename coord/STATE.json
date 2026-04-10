@@ -166,7 +166,7 @@
     "wave_3": {
       "name": "M2 — Log Consistency, SNS E2E Tests, Dashboard Severity, SQS Scheduler, Log Viewer, Scenario Simulator",
       "milestone": "M2",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "entry_condition": "Wave 2 DONE",
       "exit_condition": "Tutti i task DONE + make test PASS + SQS polling PASS + scenario simulator PASS",
       "tasks": {
@@ -231,7 +231,7 @@
           "last_updated": "2026-04-10T00:00:00Z"
         },
         "TASK_m2_scenario_simulator": {
-          "status": "BLOCKED",
+          "status": "DONE",
           "blocked_by": ["TASK_m2_sqs_scheduler", "TASK_m2_log_viewer"],
           "blocks": [],
           "risk_tier": "MED",
@@ -240,7 +240,7 @@
           "handoff": "coord/HANDOFF_m2_scenario_simulator.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-07T00:00:00Z",
-          "last_updated": "2026-04-07T00:00:00Z"
+          "last_updated": "2026-04-10T00:00:00Z"
         }
       },
       "integration_report": null,
@@ -269,12 +269,12 @@
     "M2": {
       "planned": true,
       "unlocked": true,
-      "status": "IN_PROGRESS",
-      "percent_done": 83,
-      "tasks_done": 5,
+      "status": "DONE",
+      "percent_done": 100,
+      "tasks_done": 6,
       "tasks_total": 6,
       "requires": "M1 DONE",
-      "next_action": "M2 IN PROGRESS — 5/6 DONE. TASK_m2_log_viewer DONE. TASK_m2_scenario_simulator ora sbloccato (entrambi sqs_scheduler + log_viewer DONE)."
+      "next_action": "M2 COMPLETE — 6/6 DONE. make test 30/30 PASS. Wave 3 completata."
     }
   },
 
@@ -295,7 +295,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-10T00:00:00Z",
+    "last_updated": "2026-04-10T16:17:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
