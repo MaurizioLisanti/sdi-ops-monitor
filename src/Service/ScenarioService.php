@@ -3,39 +3,10 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Model\ScenarioResult;
 use App\Model\Table\AlertsTable;
 use App\Model\Table\MetricsTable;
 use Cake\Log\Log;
-
-/**
- * ScenarioResult — immutable value object returned by ScenarioService::run().
- *
- * Carries the outcome of a single scenario execution: the metric events that
- * were processed, the alerts that were generated, a per-run correlation ID for
- * log traceability, and an execution log for display in the UI.
- *
- * Defined alongside ScenarioService because it is a pure data carrier with no
- * independent lifecycle; it is always constructed by ScenarioService::run().
- */
-final class ScenarioResult
-{
-    /**
-     * @param string               $correlationId   UUID v4 generated for this run — searchable in Log Viewer.
-     * @param string               $scenarioName    Human-readable name of the executed scenario.
-     * @param array<array<string, mixed>> $metricsInserted Metric data arrays that were processed (or would be in dry-run).
-     * @param array<array<string, mixed>> $alertsCreated   Alert data arrays created by AlertsService during the run.
-     * @param array<string>        $log             Ordered list of operation messages for the results UI.
-     * @param bool                 $dryRun          True when no data was persisted to the database.
-     */
-    public function __construct(
-        public readonly string $correlationId,
-        public readonly string $scenarioName,
-        public readonly array  $metricsInserted,
-        public readonly array  $alertsCreated,
-        public readonly array  $log,
-        public readonly bool   $dryRun,
-    ) {}
-}
 
 /**
  * ScenarioService — SDI/FatturaPA operational scenario simulator.
@@ -99,7 +70,7 @@ class ScenarioService
                                 . '(SDI error code 004 — invalid signing certificate). '
                                 . 'Two samples: 70 % (healthy), 92 % (high breach).',
             'expected_outcome' => '1 alert: 1 high',
-            'source'           => 'fattturapa-validator-roma-01',
+            'source'           => 'fatturapa-validator-roma-01',
             'tags'             => ['sdi_error' => '004', 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Roma'],
             'events'           => [
                 ['name' => 'memory_usage', 'value' => 70.0, 'unit' => 'percent'],

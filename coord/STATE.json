@@ -291,13 +291,13 @@
           "last_updated": "2026-04-10T18:00:00Z"
         },
         "TASK_m3_fix_wave3_obs": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": ["TASK_m3_ai_diagnostics"],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
-          "handoff": null,
+          "handoff": "coord/HANDOFF_m3_fix_wave3_obs.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-10T18:00:00Z",
           "last_updated": "2026-04-10T18:00:00Z"
@@ -352,11 +352,11 @@
       "planned": true,
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 40,
-      "tasks_done": 2,
+      "percent_done": 60,
+      "tasks_done": 3,
       "tasks_total": 5,
       "requires": "M2 DONE",
-      "next_action": "TASK_m3_ai_diagnostics DONE. Unblocked: TASK_m3_fix_wave3_obs. Parallel remaining: TASK_m3_runbook || TASK_m3_phpcs || TASK_m3_fix_wave3_obs."
+      "next_action": "TASK_m3_fix_wave3_obs DONE. Remaining: TASK_m3_runbook (TODO) || TASK_m3_phpcs (BLOCKED by ci_pipeline — already DONE, can start)."
     }
   },
 

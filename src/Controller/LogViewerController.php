@@ -131,25 +131,43 @@ class LogViewerController extends AppController
     }
 
     /**
-     * Read the last N non-empty lines from a file.
+     * Read the last N non-empty lines from a file using SplFileObject.
      *
-     * Uses file() with FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES, then
-     * takes a tail slice. This loads the whole file into memory; suitable for
-     * log files up to several hundred MiB at the configured MAX_LINES cap.
+     * Seeks to the end of the file to determine the total line count without
+     * loading all content into memory, then re-seeks to the target start line
+     * and streams only the required tail. This avoids the OOM risk of file()
+     * on log files larger than 200 MiB while preserving the same return contract.
      *
-     * @param  string       $path  Absolute path to the log file.
-     * @param  int          $count Number of tail lines to return (≥ 1).
-     * @return array<string>       Raw log line strings, oldest first.
+     * @param  string        $path  Absolute path to the log file.
+     * @param  int           $count Number of tail lines to return (≥ 1).
+     * @return array<string>        Raw log line strings, oldest first, empty lines excluded.
      */
     private function readLastLines(string $path, int $count): array
     {
-        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        $file = new \SplFileObject($path, 'r');
+        $file->setFlags(\SplFileObject::READ_AHEAD | \SplFileObject::DROP_NEW_LINE);
 
-        if ($lines === false) {
-            return [];
+        // Advance to the last line to determine the raw line count without buffering
+        // the entire file in a PHP array. PHP_INT_MAX causes SplFileObject to seek
+        // until EOF and report the final line key.
+        $file->seek(PHP_INT_MAX);
+        $totalLines = $file->key() + 1;
+
+        // Seek back to the first raw line we need, then stream forward collecting
+        // non-empty lines to match FILE_SKIP_EMPTY_LINES behaviour of the old impl.
+        $startLine = max(0, $totalLines - $count);
+        $file->seek($startLine);
+
+        $lines = [];
+        while (!$file->eof()) {
+            $line = trim((string)$file->current());
+            if ($line !== '') {
+                $lines[] = $line;
+            }
+            $file->next();
         }
 
-        return array_slice($lines, -$count);
+        return $lines;
     }
 
     /**

@@ -107,8 +107,14 @@ class Application extends BaseApplication
      * Register application routes, extending the default config/routes.php definitions.
      *
      * Calls parent::routes() first to load all routes declared in config/routes.php,
-     * then appends the /logs route for the LogViewerController. The route is automatically
-     * protected by BasicAuthMiddleware which sits ahead of RoutingMiddleware in the stack.
+     * then appends the custom application routes added in M2 and M3:
+     *   GET  /logs           — LogViewerController::index()         (M2 — structured log viewer)
+     *   GET  /simulate       — ScenarioSimulatorController::index() (M2 — scenario selector)
+     *   POST /simulate/run   — ScenarioSimulatorController::run()   (M2 — scenario execution)
+     *   GET  /ai-diagnostics — AiDiagnosticsController::index()     (M3 — LLM health analysis)
+     *
+     * All routes are protected by BasicAuthMiddleware which sits ahead of RoutingMiddleware
+     * in the middleware stack. /health is always exempt to keep liveness probes functional.
      *
      * @param \Cake\Routing\RouteBuilder $routes The route builder provided by RoutingMiddleware.
      * @return void
