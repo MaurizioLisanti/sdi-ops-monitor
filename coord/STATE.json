@@ -303,16 +303,16 @@
           "last_updated": "2026-04-10T18:00:00Z"
         },
         "TASK_m3_runbook": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": [],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
-          "handoff": null,
+          "handoff": "coord/HANDOFF_m3_runbook.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-10T18:00:00Z",
-          "last_updated": "2026-04-10T18:00:00Z"
+          "last_updated": "2026-04-10T18:15:00Z"
         }
       },
       "integration_report": null,
@@ -352,11 +352,11 @@
       "planned": true,
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 60,
-      "tasks_done": 3,
+      "percent_done": 80,
+      "tasks_done": 4,
       "tasks_total": 5,
       "requires": "M2 DONE",
-      "next_action": "TASK_m3_fix_wave3_obs DONE. Remaining: TASK_m3_runbook (TODO) || TASK_m3_phpcs (BLOCKED by ci_pipeline — already DONE, can start)."
+      "next_action": "TASK_m3_runbook DONE. Only TASK_m3_phpcs remains (BLOCKED_BY TASK_m3_ci_pipeline → DONE → can start immediately)."
     }
   },
 
