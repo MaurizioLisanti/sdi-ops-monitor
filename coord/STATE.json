@@ -226,9 +226,9 @@
           "assignee": "Executor",
           "suggested_agent": "Codex o Qwen Coder",
           "handoff": "coord/HANDOFF_m2_log_viewer.md",
-          "smoke_test_after_merge": "PENDING",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-07T00:00:00Z",
-          "last_updated": "2026-04-08T16:32:00Z"
+          "last_updated": "2026-04-10T00:00:00Z"
         },
         "TASK_m2_scenario_simulator": {
           "status": "BLOCKED",
@@ -295,7 +295,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-07T00:00:00Z",
+    "last_updated": "2026-04-10T00:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
