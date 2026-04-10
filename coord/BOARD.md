@@ -3,6 +3,7 @@
 <!-- Aggiorna dopo ogni HANDOFF DONE. -->
 <!-- [UPDATED: 2026-04-02 — Planner pass: aggiunti tabella ruoli completa, routing agenti, regole worktree, conflict detection, protocollo HANDOFF] -->
 <!-- [UPDATED: 2026-04-03 — Planner pass M1: Wave 2 sbloccata, 5 task M1 pianificati con dipendenze e parallelism matrix] -->
+<!-- [UPDATED: 2026-04-10 — Planner pass M3: Wave 3 DONE, Wave 4 pianificata, 5 task M3, parallelism matrix e sequenza] -->
 
 ---
 
@@ -137,18 +138,19 @@ Vedere `coord/INTEGRATION_REPORT_wave2.md` per dettaglio. Avvertimenti non blocc
 
 ---
 
-## Wave 3 — M2 · Fix W1/W2/W3 + SQS Scheduler + Log Viewer + Scenario Simulator 🚀 IN PROGRESS
+## Wave 3 — M2 · Fix W1/W2/W3 + SQS Scheduler + Log Viewer + Scenario Simulator ✅ DONE
 
 <!-- [UPDATED: 2026-04-07 — Planner pass M2: 6 task pianificati] -->
+<!-- [UPDATED: 2026-04-10 — Planner pass M3: Wave 3 marcata DONE, integration_report aggiunto] -->
 
 | # | Task | Titolo | Assegnatario | Status | Dipende da | Risk | Agente |
 |---|------|--------|-------------|--------|------------|------|--------|
-| 1 | TASK_m2_fix_log_consistency | Fix W1 log format + W3 stale TODO | Executor | **TODO** | — | LOW | Claude |
-| 1 | TASK_m2_fix_sns_e2e_test | W2: integration tests SNS pipeline | Executor | **TODO** | — | LOW | Claude |
-| 1 | TASK_m2_dashboard_severity | Dashboard semaforo severity-based | Executor | **TODO** | — | LOW | Claude |
-| 2 | TASK_m2_sqs_scheduler | AWS SQS polling Command | Executor | **TODO** | — | HIGH | Codex |
-| 2 | TASK_m2_log_viewer | Log Viewer web UI | Executor | BLOCKED | fix_log_consistency | MED | Codex |
-| 3 | TASK_m2_scenario_simulator | SDI/FatturaPA scenario simulator | Executor | BLOCKED | sqs_scheduler + log_viewer | MED | Codex |
+| 1 | TASK_m2_fix_log_consistency | Fix W1 log format + W3 stale TODO | Executor | **DONE** | — | LOW | Claude |
+| 1 | TASK_m2_fix_sns_e2e_test | W2: integration tests SNS pipeline | Executor | **DONE** | — | LOW | Claude |
+| 1 | TASK_m2_dashboard_severity | Dashboard semaforo severity-based | Executor | **DONE** | — | LOW | Claude |
+| 2 | TASK_m2_sqs_scheduler | AWS SQS polling Command | Executor | **DONE** | — | HIGH | Codex |
+| 2 | TASK_m2_log_viewer | Log Viewer web UI | Executor | **DONE** | fix_log_consistency | MED | Codex |
+| 3 | TASK_m2_scenario_simulator | SDI/FatturaPA scenario simulator | Executor | **DONE** | sqs_scheduler + log_viewer | MED | Codex |
 
 ### Parallelism matrix Wave 3
 
@@ -172,7 +174,44 @@ Step 3 (seq):  TASK_m2_scenario_simulator
 ```
 
 ### Exit condition Wave 3
-Tutti i 6 task DONE + `make test` PASS + SQS dry-run PASS + scenario simulator PASS.
+✅ Soddisfatta — 6/6 DONE + `make test` PASS (30 tests, 87 assertions, exit 0) + SQS dry-run PASS + scenario simulator PASS.
+Vedere `coord/INTEGRATION_REPORT_wave3.md` per dettaglio. Osservazioni non bloccanti: OBS-1…OBS-4 → candidate TASK M3.
+
+---
+
+## Wave 4 — M3 · Demo Ready 🚀 IN PROGRESS
+
+<!-- [UPDATED: 2026-04-10 — Planner pass M3: Wave 4 pianificata, 5 task] -->
+
+| # | Task | Titolo | Assegnatario | Status | Dipende da | Risk | Agente |
+|---|------|--------|-------------|--------|------------|------|--------|
+| 1 | TASK_m3_ai_diagnostics | OpenRouter AI diagnostics + fallback | Executor | **TODO** | — | MED | Codex / Qwen |
+| 1 | TASK_m3_ci_pipeline | GitHub Actions CI pipeline | Executor | **TODO** | — | LOW | Claude |
+| 1 | TASK_m3_runbook | Runbook operativo | Executor | **TODO** | — | LOW | Claude |
+| 2 | TASK_m3_fix_wave3_obs | Fix OBS-1…OBS-4 da Integration Report W3 | Executor | BLOCKED | ai_diagnostics | LOW | Claude |
+| 2 | TASK_m3_phpcs | PHPCS PSR-12 code style check | Executor | BLOCKED | ci_pipeline | LOW | Claude |
+
+### Parallelism matrix Wave 4
+
+| Task A | Task B | Parallelo? | Motivo |
+|--------|--------|-----------|--------|
+| TASK_m3_ai_diagnostics | TASK_m3_ci_pipeline | **SÌ** | path disgiunti (src/ vs .github/) |
+| TASK_m3_ai_diagnostics | TASK_m3_runbook | **SÌ** | path disgiunti (src/ vs docs/) |
+| TASK_m3_ci_pipeline | TASK_m3_runbook | **SÌ** | path disgiunti (.github/ vs docs/) |
+| TASK_m3_ai_diagnostics | TASK_m3_fix_wave3_obs | NO | entrambi toccano Application.php — fix_wave3_obs BLOCKED_BY ai_diagnostics |
+| TASK_m3_ci_pipeline | TASK_m3_phpcs | NO | entrambi toccano ci.yml — phpcs BLOCKED_BY ci_pipeline |
+| TASK_m3_fix_wave3_obs | TASK_m3_phpcs | **SÌ** | path disgiunti (src/ vs phpcs.xml/Makefile) — ma entrambi sono step 2 |
+
+### Sequenza di esecuzione Wave 4
+
+```
+Step 1 (par):  TASK_m3_ai_diagnostics  ║  TASK_m3_ci_pipeline  ║  TASK_m3_runbook
+                      ↓ (dopo ai_diagnostics)    ↓ (dopo ci_pipeline)
+Step 2 (par):  TASK_m3_fix_wave3_obs        ║  TASK_m3_phpcs
+```
+
+### Exit condition Wave 4
+Tutti i 5 task DONE + `make test` PASS + `GET /ai-diagnostics` 200 + CI green + `make phpcs` OK + `docs/RUNBOOK.md` presente.
 
 ---
 

@@ -15,8 +15,8 @@
     "label": "MED"
   },
 
-  "current_wave": 3,
-  "total_waves": 3,
+  "current_wave": 4,
+  "total_waves": 4,
 
   "waves": {
     "wave_1": {
@@ -243,9 +243,81 @@
           "last_updated": "2026-04-10T16:20:00Z"
         }
       },
-      "integration_report": null,
+      "integration_report": "coord/INTEGRATION_REPORT_wave3.md",
       "wave_started": "2026-04-07T00:00:00Z",
       "wave_completed": "2026-04-10T16:20:00Z"
+    },
+    "wave_4": {
+      "name": "M3 — Demo Ready: AI Diagnostics, CI Pipeline, PHPCS, OBS Fixes, Runbook",
+      "milestone": "M3",
+      "status": "IN_PROGRESS",
+      "entry_condition": "Wave 3 DONE",
+      "exit_condition": "Tutti i task DONE + make test PASS + CI green + PHPCS configurato + docs/RUNBOOK.md presente",
+      "tasks": {
+        "TASK_m3_ai_diagnostics": {
+          "status": "TODO",
+          "blocked_by": [],
+          "blocks": ["TASK_m3_fix_wave3_obs"],
+          "risk_tier": "MED",
+          "assignee": "Executor",
+          "suggested_agent": "Codex o Qwen Coder",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "created": "2026-04-10T18:00:00Z",
+          "last_updated": "2026-04-10T18:00:00Z"
+        },
+        "TASK_m3_ci_pipeline": {
+          "status": "TODO",
+          "blocked_by": [],
+          "blocks": ["TASK_m3_phpcs"],
+          "risk_tier": "LOW",
+          "assignee": "Executor",
+          "suggested_agent": "Claude",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "created": "2026-04-10T18:00:00Z",
+          "last_updated": "2026-04-10T18:00:00Z"
+        },
+        "TASK_m3_phpcs": {
+          "status": "BLOCKED",
+          "blocked_by": ["TASK_m3_ci_pipeline"],
+          "blocks": [],
+          "risk_tier": "LOW",
+          "assignee": "Executor",
+          "suggested_agent": "Claude",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "created": "2026-04-10T18:00:00Z",
+          "last_updated": "2026-04-10T18:00:00Z"
+        },
+        "TASK_m3_fix_wave3_obs": {
+          "status": "BLOCKED",
+          "blocked_by": ["TASK_m3_ai_diagnostics"],
+          "blocks": [],
+          "risk_tier": "LOW",
+          "assignee": "Executor",
+          "suggested_agent": "Claude",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "created": "2026-04-10T18:00:00Z",
+          "last_updated": "2026-04-10T18:00:00Z"
+        },
+        "TASK_m3_runbook": {
+          "status": "TODO",
+          "blocked_by": [],
+          "blocks": [],
+          "risk_tier": "LOW",
+          "assignee": "Executor",
+          "suggested_agent": "Claude",
+          "handoff": null,
+          "smoke_test_after_merge": "PENDING",
+          "created": "2026-04-10T18:00:00Z",
+          "last_updated": "2026-04-10T18:00:00Z"
+        }
+      },
+      "integration_report": null,
+      "wave_started": "2026-04-10T18:00:00Z",
+      "wave_completed": null
     }
   },
 
@@ -275,6 +347,16 @@
       "tasks_total": 6,
       "requires": "M1 DONE",
       "next_action": "M2 COMPLETE — 6/6 DONE. make test 30/30 PASS. Wave 3 completata."
+    },
+    "M3": {
+      "planned": true,
+      "unlocked": true,
+      "status": "IN_PROGRESS",
+      "percent_done": 0,
+      "tasks_done": 0,
+      "tasks_total": 5,
+      "requires": "M2 DONE",
+      "next_action": "Step 1 (par): TASK_m3_ai_diagnostics || TASK_m3_ci_pipeline || TASK_m3_runbook"
     }
   },
 
@@ -288,14 +370,16 @@
     {"id": "A5", "text": "CakePHP 5 non richiede config/bootstrap.php separato — quello esistente è sufficiente"},
     {"id": "A6", "text": "Campo tags in tabella metrics è tipo JSON o TEXT con serializzazione — verificare migration"},
     {"id": "A7", "text": "Se alerts è vuota, dashboard mostra overallStatus green senza errori"},
-    {"id": "A8", "text": "MetricsFixture necessaria solo se i test verificano persistenza via SELECT"}
+    {"id": "A8", "text": "MetricsFixture necessaria solo se i test verificano persistenza via SELECT"},
+    {"id": "A9", "text": "OPENROUTER_API_KEY assente → fallback deterministico attivo — nessun errore esposto; demo funziona offline"},
+    {"id": "A10", "text": "GitHub Actions abilitato sul repository — workflow ci.yml non richiede configurazione aggiuntiva"}
   ],
 
   "replan_history": [],
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-10T16:20:00Z",
+    "last_updated": "2026-04-10T18:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
