@@ -238,14 +238,14 @@
           "assignee": "Executor",
           "suggested_agent": "Codex o Qwen Coder",
           "handoff": "coord/HANDOFF_m2_scenario_simulator.md",
-          "smoke_test_after_merge": "PENDING",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-07T00:00:00Z",
-          "last_updated": "2026-04-10T00:00:00Z"
+          "last_updated": "2026-04-10T16:20:00Z"
         }
       },
       "integration_report": null,
       "wave_started": "2026-04-07T00:00:00Z",
-      "wave_completed": null
+      "wave_completed": "2026-04-10T16:20:00Z"
     }
   },
 
@@ -295,7 +295,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-10T16:17:00Z",
+    "last_updated": "2026-04-10T16:20:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
