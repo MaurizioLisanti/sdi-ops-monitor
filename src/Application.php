@@ -126,6 +126,10 @@ class Application extends BaseApplication
         // /simulate/run must be registered before any wildcard /simulate/* pattern would match.
         $routes->connect('/simulate/run', ['controller' => 'ScenarioSimulator', 'action' => 'run']);
         $routes->connect('/simulate', ['controller' => 'ScenarioSimulator', 'action' => 'index']);
+
+        // AI Diagnostics — LLM-powered system health analysis with deterministic fallback.
+        // Protected by BasicAuthMiddleware automatically.
+        $routes->connect('/ai-diagnostics', ['controller' => 'AiDiagnostics', 'action' => 'index']);
     }
 
     /**

@@ -255,16 +255,16 @@
       "exit_condition": "Tutti i task DONE + make test PASS + CI green + PHPCS configurato + docs/RUNBOOK.md presente",
       "tasks": {
         "TASK_m3_ai_diagnostics": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": [],
           "blocks": ["TASK_m3_fix_wave3_obs"],
           "risk_tier": "MED",
           "assignee": "Executor",
           "suggested_agent": "Codex o Qwen Coder",
-          "handoff": null,
+          "handoff": "coord/HANDOFF_m3_ai_diagnostics.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-10T18:00:00Z",
-          "last_updated": "2026-04-10T18:00:00Z"
+          "last_updated": "2026-04-10T17:35:00Z"
         },
         "TASK_m3_ci_pipeline": {
           "status": "DONE",
@@ -291,7 +291,7 @@
           "last_updated": "2026-04-10T18:00:00Z"
         },
         "TASK_m3_fix_wave3_obs": {
-          "status": "BLOCKED",
+          "status": "TODO",
           "blocked_by": ["TASK_m3_ai_diagnostics"],
           "blocks": [],
           "risk_tier": "LOW",
@@ -352,11 +352,11 @@
       "planned": true,
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 20,
-      "tasks_done": 1,
+      "percent_done": 40,
+      "tasks_done": 2,
       "tasks_total": 5,
       "requires": "M2 DONE",
-      "next_action": "TASK_m3_ci_pipeline DONE. Parallel: TASK_m3_ai_diagnostics || TASK_m3_runbook. TASK_m3_phpcs now unblocked."
+      "next_action": "TASK_m3_ai_diagnostics DONE. Unblocked: TASK_m3_fix_wave3_obs. Parallel remaining: TASK_m3_runbook || TASK_m3_phpcs || TASK_m3_fix_wave3_obs."
     }
   },
 
@@ -379,7 +379,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-10T18:30:00Z",
+    "last_updated": "2026-04-10T17:35:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_04_executor_agent_v3"
   }
