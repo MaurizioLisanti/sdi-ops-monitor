@@ -8,6 +8,7 @@ use App\Model\Entity\Metric;
 use App\Model\Table\AlertsTable;
 use Cake\Core\Configure;
 use Cake\Log\Log;
+use RuntimeException;
 
 /**
  * AlertsService — threshold evaluation engine for metric-based alerts.
@@ -120,7 +121,7 @@ class AlertsService
             "Metric '%s' value %.4g exceeded %s threshold.",
             $metricName,
             $metricValue,
-            $severity
+            $severity,
         );
 
         $alert = $this->alertsTable->newEntity([
@@ -146,8 +147,8 @@ class AlertsService
                 ],
             ], JSON_THROW_ON_ERROR));
 
-            throw new \RuntimeException(
-                sprintf('AlertsService: could not save alert for metric "%s".', $metricName)
+            throw new RuntimeException(
+                sprintf('AlertsService: could not save alert for metric "%s".', $metricName),
             );
         }
 

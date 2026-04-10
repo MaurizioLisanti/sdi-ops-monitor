@@ -47,7 +47,7 @@ class CorrelationIdMiddleware implements MiddlewareInterface
      */
     public function process(
         ServerRequestInterface $request,
-        RequestHandlerInterface $handler
+        RequestHandlerInterface $handler,
     ): ResponseInterface {
         $correlationId = $request->getHeaderLine(self::HEADER_NAME);
 
@@ -88,7 +88,7 @@ class CorrelationIdMiddleware implements MiddlewareInterface
             bin2hex(substr($data, 4, 2)),
             bin2hex(substr($data, 6, 2)),
             bin2hex(substr($data, 8, 2)),
-            bin2hex(substr($data, 10, 6))
+            bin2hex(substr($data, 10, 6)),
         );
     }
 }

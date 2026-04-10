@@ -6,6 +6,7 @@ namespace App\Model\Table;
 use Cake\ORM\Query\SelectQuery;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use DateTimeImmutable;
 
 /**
  * MetricsTable — persistence layer for metric events.
@@ -14,7 +15,7 @@ use Cake\Validation\Validator;
  * The `tags` column is stored as TEXT and automatically serialised/deserialised
  * as JSON via the ORM type system.
  *
- * @todo (Planner): add scoped finders (bySource, byName, recentN).
+ * @todo (\App\Model\Table\Planner): add scoped finders (bySource, byName, recentN).
  */
 class MetricsTable extends Table
 {
@@ -100,7 +101,7 @@ class MetricsTable extends Table
      */
     public function findRecent24h(SelectQuery $query): SelectQuery
     {
-        $cutoff = new \DateTimeImmutable('-24 hours');
+        $cutoff = new DateTimeImmutable('-24 hours');
 
         return $query->where(['recorded_at >=' => $cutoff]);
     }

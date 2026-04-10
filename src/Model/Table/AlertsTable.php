@@ -13,7 +13,7 @@ use Cake\Validation\Validator;
  *
  * Maps to the `alerts` database table (see migration 20260402000002).
  *
- * @todo (Planner): integrate alert engine service (M1); add acknowledge action.
+ * @todo (\App\Model\Table\Planner): integrate alert engine service (M1); add acknowledge action.
  */
 class AlertsTable extends Table
 {
@@ -73,7 +73,7 @@ class AlertsTable extends Table
         // → critical=1, high=2, medium=3, low=4 → ascending gives critical first.
         $severityOrder = new FunctionExpression(
             'FIELD',
-            ['Alerts.severity' => 'identifier', "'critical'", "'high'", "'medium'", "'low'"]
+            ['Alerts.severity' => 'identifier', "'critical'", "'high'", "'medium'", "'low'"],
         );
 
         return $query

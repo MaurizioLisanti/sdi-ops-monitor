@@ -53,7 +53,7 @@ class BasicAuthMiddleware implements MiddlewareInterface
      */
     public function process(
         ServerRequestInterface $request,
-        RequestHandlerInterface $handler
+        RequestHandlerInterface $handler,
     ): ResponseInterface {
         $path = $request->getUri()->getPath();
 
@@ -66,6 +66,7 @@ class BasicAuthMiddleware implements MiddlewareInterface
 
         if (!$this->isAuthenticated($providedUser, $providedPassword)) {
             $this->logAuthFailure($request, $providedUser);
+
             return $this->buildUnauthorizedResponse();
         }
 

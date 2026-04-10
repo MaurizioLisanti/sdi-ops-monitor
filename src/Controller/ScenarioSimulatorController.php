@@ -34,7 +34,7 @@ class ScenarioSimulatorController extends AppController
     {
         $service = new ScenarioService(
             $this->fetchTable('Metrics'),
-            $this->fetchTable('Alerts')
+            $this->fetchTable('Alerts'),
         );
 
         $this->set('scenarios', $service->getScenarios());
@@ -69,7 +69,7 @@ class ScenarioSimulatorController extends AppController
 
         $service   = new ScenarioService(
             $this->fetchTable('Metrics'),
-            $this->fetchTable('Alerts')
+            $this->fetchTable('Alerts'),
         );
         $scenarios = $service->getScenarios();
 

@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Model\Table\AlertsTable;
 use App\Service\AlertsService;
 use App\Service\SqsPollerService;
 use Aws\Sqs\SqsClient;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use Cake\Log\Log;
+use Closure;
 
 /**
  * SnsSignatureValidator
@@ -76,7 +77,7 @@ class SnsSignatureValidator
      *
      * @var \Closure(string): (string|false)
      */
-    private \Closure $httpGet;
+    private Closure $httpGet;
 
     /**
      * @param callable(string):(string|false)|null $httpGet Optional HTTP GET callable.
@@ -87,7 +88,7 @@ class SnsSignatureValidator
     {
         // Default: use file_get_contents with TLS peer verification enabled.
         $this->httpGet = $httpGet !== null
-            ? \Closure::fromCallable($httpGet)
+            ? Closure::fromCallable($httpGet)
             : static function (string $url): string|false {
                 $ctx = stream_context_create([
                     'ssl' => [

@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use SplFileObject;
+
 /**
  * LogViewerController — web UI for inspecting structured JSON application logs.
  *
@@ -138,14 +140,14 @@ class LogViewerController extends AppController
      * and streams only the required tail. This avoids the OOM risk of file()
      * on log files larger than 200 MiB while preserving the same return contract.
      *
-     * @param  string        $path  Absolute path to the log file.
-     * @param  int           $count Number of tail lines to return (≥ 1).
+     * @param string        $path  Absolute path to the log file.
+     * @param int           $count Number of tail lines to return (≥ 1).
      * @return array<string>        Raw log line strings, oldest first, empty lines excluded.
      */
     private function readLastLines(string $path, int $count): array
     {
-        $file = new \SplFileObject($path, 'r');
-        $file->setFlags(\SplFileObject::READ_AHEAD | \SplFileObject::DROP_NEW_LINE);
+        $file = new SplFileObject($path, 'r');
+        $file->setFlags(SplFileObject::READ_AHEAD | SplFileObject::DROP_NEW_LINE);
 
         // Advance to the last line to determine the raw line count without buffering
         // the entire file in a PHP array. PHP_INT_MAX causes SplFileObject to seek
@@ -178,7 +180,7 @@ class LogViewerController extends AppController
      * A line that cannot be decoded is returned as a 'raw' entry so no log
      * output is silently discarded (e.g. startup banners or plain-text entries).
      *
-     * @param  array<string>          $lines Raw log line strings.
+     * @param array<string>          $lines Raw log line strings.
      * @return array<array<string, mixed>> Parsed log entry arrays.
      */
     private function parseLines(array $lines): array
@@ -223,9 +225,9 @@ class LogViewerController extends AppController
      * An empty string for either parameter disables that filter dimension.
      * When both are set they are combined with AND logic (both must match).
      *
-     * @param  array<array<string, mixed>> $entries           Parsed log entry arrays.
-     * @param  string                      $levelFilter       Log level to keep, or '' for all.
-     * @param  string                      $correlationFilter Exact correlation ID to keep, or '' for all.
+     * @param array<array<string, mixed>> $entries           Parsed log entry arrays.
+     * @param string                      $levelFilter       Log level to keep, or '' for all.
+     * @param string                      $correlationFilter Exact correlation ID to keep, or '' for all.
      * @return array<array<string, mixed>> Filtered and re-indexed log entry arrays.
      */
     private function applyFilters(array $entries, string $levelFilter, string $correlationFilter): array
@@ -246,7 +248,7 @@ class LogViewerController extends AppController
                 }
 
                 return true;
-            }
+            },
         ));
     }
 }

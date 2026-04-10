@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  PHP_CodeSniffer ruleset — sdi-ops-monitor
+  Standard: CakePHP (extends PSR-12, installed via cakephp/cakephp-codesniffer)
+
+  Run:      make phpcs
+  Auto-fix: make phpcbf
+
+  Violations in the first run are warning-only (CI step uses continue-on-error: true).
+  Systematic violation fixes are tracked as a separate chore task (post-M3).
+-->
+<ruleset name="sdi-ops-monitor">
+    <description>CakePHP coding standard for sdi-ops-monitor (PHP 8.2 / CakePHP 5)</description>
+
+    <!-- Scan the application source only. -->
+    <file>src/</file>
+
+    <!-- Exclude auto-generated CakePHP bootstrap and framework files. -->
+    <!-- Application.php follows CakePHP's own scaffold style. -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>src/Application.php</exclude-pattern>
+
+    <!-- PHP 8.2 target — enables modern syntax rules. -->
+    <config name="php_version" value="80200"/>
+
+    <!-- Show sniff codes in output to make selective suppression easier. -->
+    <arg name="report" value="full"/>
+    <arg name="colors"/>
+    <arg value="p"/>
+
+    <!-- CakePHP extends PSR-12 with additional conventions for CakePHP projects. -->
+    <rule ref="CakePHP"/>
+</ruleset>

@@ -7,6 +7,9 @@ use App\Model\ScenarioResult;
 use App\Model\Table\AlertsTable;
 use App\Model\Table\MetricsTable;
 use Cake\Log\Log;
+use DateTimeImmutable;
+use InvalidArgumentException;
+use Throwable;
 
 /**
  * ScenarioService — SDI/FatturaPA operational scenario simulator.
@@ -115,7 +118,7 @@ class ScenarioService
     ];
 
     private MetricsTable $metricsTable;
-    private AlertsTable  $alertsTable;
+    private AlertsTable $alertsTable;
 
     /**
      * @param \App\Model\Table\MetricsTable $metricsTable Persistence layer for Metric entities.
@@ -150,14 +153,14 @@ class ScenarioService
      *
      * @param string $scenarioId The key from the scenario catalogue (e.g. 'scenario-1').
      * @param bool   $dryRun     When true, metrics and alerts are not persisted.
-     * @return ScenarioResult The full outcome of the scenario run.
+     * @return \App\Model\ScenarioResult The full outcome of the scenario run.
      * @throws \InvalidArgumentException When $scenarioId is not in the catalogue.
      */
     public function run(string $scenarioId, bool $dryRun = false): ScenarioResult
     {
         if (!isset(self::SCENARIOS[$scenarioId])) {
-            throw new \InvalidArgumentException(
-                sprintf('Unknown scenario ID: "%s". Valid IDs: %s.', $scenarioId, implode(', ', array_keys(self::SCENARIOS)))
+            throw new InvalidArgumentException(
+                sprintf('Unknown scenario ID: "%s". Valid IDs: %s.', $scenarioId, implode(', ', array_keys(self::SCENARIOS))),
             );
         }
 
@@ -175,7 +178,7 @@ class ScenarioService
             // Stagger recorded_at timestamps so entries appear in insertion order
             // in the Log Viewer (newest entry = last in the sequence).
             $secondsAgo = ($eventCount - $index) * 30;
-            $recordedAt = (new \DateTimeImmutable(sprintf('-%d seconds', $secondsAgo)))->format('Y-m-d H:i:s');
+            $recordedAt = (new DateTimeImmutable(sprintf('-%d seconds', $secondsAgo)))->format('Y-m-d H:i:s');
 
             $metricData = [
                 'source'      => $scenario['source'],
@@ -194,7 +197,7 @@ class ScenarioService
                     $event['name'],
                     $event['value'],
                     $event['unit'],
-                    $scenario['source']
+                    $scenario['source'],
                 );
                 continue;
             }
@@ -226,7 +229,7 @@ class ScenarioService
                 (int)$metric->id,
                 $event['name'],
                 $event['value'],
-                $event['unit']
+                $event['unit'],
             );
 
             try {
@@ -244,12 +247,12 @@ class ScenarioService
                         '[ALERT] %s threshold breached — %s alert created (id=%d)',
                         strtoupper((string)$alert->severity),
                         $alert->severity,
-                        (int)$alert->id
+                        (int)$alert->id,
                     );
                 } else {
                     $log[] = sprintf('[OK] No threshold breached for %s = %.4g', $event['name'], $event['value']);
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $log[] = sprintf('[WARNING] AlertsService failed for %s: %s', $event['name'], $e->getMessage());
 
                 Log::warning(json_encode([
@@ -281,12 +284,12 @@ class ScenarioService
         ], JSON_THROW_ON_ERROR));
 
         return new ScenarioResult(
-            correlationId:   $correlationId,
-            scenarioName:    $scenario['name'],
+            correlationId: $correlationId,
+            scenarioName: $scenario['name'],
             metricsInserted: $metricsInserted,
-            alertsCreated:   $alertsCreated,
-            log:             $log,
-            dryRun:          $dryRun,
+            alertsCreated: $alertsCreated,
+            log: $log,
+            dryRun: $dryRun,
         );
     }
 
@@ -316,7 +319,7 @@ class ScenarioService
             substr($hex, 8, 4),
             substr($hex, 12, 4),
             substr($hex, 16, 4),
-            substr($hex, 20, 12)
+            substr($hex, 20, 12),
         );
     }
 }

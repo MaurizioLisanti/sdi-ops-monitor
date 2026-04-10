@@ -250,7 +250,7 @@
     "wave_4": {
       "name": "M3 — Demo Ready: AI Diagnostics, CI Pipeline, PHPCS, OBS Fixes, Runbook",
       "milestone": "M3",
-      "status": "IN_PROGRESS",
+      "status": "DONE",
       "entry_condition": "Wave 3 DONE",
       "exit_condition": "Tutti i task DONE + make test PASS + CI green + PHPCS configurato + docs/RUNBOOK.md presente",
       "tasks": {
@@ -279,16 +279,16 @@
           "last_updated": "2026-04-10T18:30:00Z"
         },
         "TASK_m3_phpcs": {
-          "status": "BLOCKED",
+          "status": "DONE",
           "blocked_by": ["TASK_m3_ci_pipeline"],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
-          "handoff": null,
+          "handoff": "coord/HANDOFF_m3_phpcs.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-10T18:00:00Z",
-          "last_updated": "2026-04-10T18:00:00Z"
+          "last_updated": "2026-04-10T18:30:00Z"
         },
         "TASK_m3_fix_wave3_obs": {
           "status": "DONE",
@@ -352,11 +352,11 @@
       "planned": true,
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 80,
-      "tasks_done": 4,
+      "percent_done": 100,
+      "tasks_done": 5,
       "tasks_total": 5,
       "requires": "M2 DONE",
-      "next_action": "TASK_m3_runbook DONE. Only TASK_m3_phpcs remains (BLOCKED_BY TASK_m3_ci_pipeline → DONE → can start immediately)."
+      "next_action": "M3 COMPLETE — 5/5 DONE. make test 35/35 PASS. CI green. PHPCS baseline established (265 errors + 8 warnings in 14 files — continue-on-error:true). Systematic fix is a post-M3 chore."
     }
   },
 

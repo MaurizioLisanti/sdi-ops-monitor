@@ -8,6 +8,8 @@ use App\Service\AlertsService;
 use App\Service\SnsSignatureValidator;
 use Cake\Http\Response;
 use Cake\Log\Log;
+use JsonException;
+use Throwable;
 
 /**
  * MetricsController — REST API for metric ingestion.
@@ -117,7 +119,7 @@ class MetricsController extends AppController
 
         try {
             $payload = json_decode($rawBody, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
+        } catch (JsonException $e) {
             return $this->jsonResponse(400, ['error' => 'Invalid JSON body']);
         }
 
@@ -231,7 +233,7 @@ class MetricsController extends AppController
             try {
                 $alertsService = new AlertsService($this->fetchTable('Alerts'));
                 $alertsService->evaluate($metric, $correlationId);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::error(json_encode([
                     'timestamp'      => date('c'),
                     'level'          => 'error',

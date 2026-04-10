@@ -7,6 +7,7 @@ use App\Model\Table\AlertsTable;
 use App\Model\Table\MetricsTable;
 use Cake\Http\Client;
 use Cake\Log\Log;
+use Throwable;
 
 /**
  * DiagnosisResult — immutable value object returned by AiDiagnosticsService::diagnose().
@@ -35,9 +36,10 @@ final class DiagnosisResult
         public readonly string $model,
         public readonly string $correlationId,
         public readonly string $generatedAt,
-        public readonly int    $metricsCount,
-        public readonly int    $alertsCount,
-    ) {}
+        public readonly int $metricsCount,
+        public readonly int $alertsCount,
+    ) {
+    }
 }
 
 /**
@@ -111,9 +113,10 @@ class AiDiagnosticsService
      */
     public function __construct(
         private readonly MetricsTable $metricsTable,
-        private readonly AlertsTable  $alertsTable,
-        private ?Client               $httpClient = null,
-    ) {}
+        private readonly AlertsTable $alertsTable,
+        private ?Client $httpClient = null,
+    ) {
+    }
 
     /**
      * Produce a diagnosis of the current system state.
@@ -122,8 +125,8 @@ class AiDiagnosticsService
      * Falls back silently to the deterministic rule engine on key absence,
      * non-2xx response, JSON parse failure, or any thrown exception.
      *
-     * @param  string         $correlationId Request correlation ID for audit logging.
-     * @return DiagnosisResult Immutable result carrying diagnosis, source, and metadata.
+     * @param string         $correlationId Request correlation ID for audit logging.
+     * @return \App\Service\DiagnosisResult Immutable result carrying diagnosis, source, and metadata.
      */
     public function diagnose(string $correlationId): DiagnosisResult
     {
@@ -177,16 +180,16 @@ class AiDiagnosticsService
      * on HTTP error, empty content, JSON decode failure, or any exception,
      * which signals the caller to activate the fallback.
      *
-     * @param  string                              $apiKey        OPENROUTER_API_KEY value (never logged).
-     * @param  array<\App\Model\Entity\Metric>     $metrics       Recent metric entities.
-     * @param  array<\App\Model\Entity\Alert>      $alerts        Open alert entities.
-     * @param  string                              $correlationId Request correlation ID.
-     * @return DiagnosisResult|null                Populated result on success, null on any failure.
+     * @param string                              $apiKey        OPENROUTER_API_KEY value (never logged).
+     * @param array<\App\Model\Entity\Metric>     $metrics       Recent metric entities.
+     * @param array<\App\Model\Entity\Alert>      $alerts        Open alert entities.
+     * @param string                              $correlationId Request correlation ID.
+     * @return \App\Service\DiagnosisResult|null                Populated result on success, null on any failure.
      */
     private function callOpenRouter(
         string $apiKey,
-        array  $metrics,
-        array  $alerts,
+        array $metrics,
+        array $alerts,
         string $correlationId,
     ): ?DiagnosisResult {
         $model  = (string)(env('OPENROUTER_MODEL', '') ?: self::DEFAULT_MODEL);
@@ -233,6 +236,7 @@ class AiDiagnosticsService
                     'correlation_id' => $correlationId,
                     'status_code'    => $response->getStatusCode(),
                 ]);
+
                 return null;
             }
 
@@ -243,6 +247,7 @@ class AiDiagnosticsService
                 Log::warning('AI diagnostics call returned empty content', [
                     'correlation_id' => $correlationId,
                 ]);
+
                 return null;
             }
 
@@ -253,19 +258,20 @@ class AiDiagnosticsService
             ]);
 
             return new DiagnosisResult(
-                diagnosis:     $text,
-                source:        'ai',
-                model:         $model,
+                diagnosis: $text,
+                source: 'ai',
+                model: $model,
                 correlationId: $correlationId,
-                generatedAt:   gmdate('Y-m-d\TH:i:s\Z'),
-                metricsCount:  count($metrics),
-                alertsCount:   count($alerts),
+                generatedAt: gmdate('Y-m-d\TH:i:s\Z'),
+                metricsCount: count($metrics),
+                alertsCount: count($alerts),
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning('AI diagnostics call threw exception, activating fallback', [
                 'correlation_id' => $correlationId,
                 'error'          => $e->getMessage(),
             ]);
+
             return null;
         }
     }
@@ -278,14 +284,14 @@ class AiDiagnosticsService
      * repeated readings from the same host. Open alert count is appended
      * when non-zero.
      *
-     * @param  array<\App\Model\Entity\Metric> $metrics       Recent metric entities.
-     * @param  array<\App\Model\Entity\Alert>  $alerts        Open alert entities.
-     * @param  string                          $correlationId Request correlation ID.
-     * @return DiagnosisResult                 Always succeeds — no external dependencies.
+     * @param array<\App\Model\Entity\Metric> $metrics       Recent metric entities.
+     * @param array<\App\Model\Entity\Alert>  $alerts        Open alert entities.
+     * @param string                          $correlationId Request correlation ID.
+     * @return \App\Service\DiagnosisResult                 Always succeeds — no external dependencies.
      */
     private function deterministicDiagnosis(
-        array  $metrics,
-        array  $alerts,
+        array $metrics,
+        array $alerts,
         string $correlationId,
     ): DiagnosisResult {
         $issues = [];
@@ -336,13 +342,13 @@ class AiDiagnosticsService
         ]);
 
         return new DiagnosisResult(
-            diagnosis:     $diagnosis,
-            source:        'fallback',
-            model:         'deterministic-fallback',
+            diagnosis: $diagnosis,
+            source: 'fallback',
+            model: 'deterministic-fallback',
             correlationId: $correlationId,
-            generatedAt:   gmdate('Y-m-d\TH:i:s\Z'),
-            metricsCount:  count($metrics),
-            alertsCount:   count($alerts),
+            generatedAt: gmdate('Y-m-d\TH:i:s\Z'),
+            metricsCount: count($metrics),
+            alertsCount: count($alerts),
         );
     }
 
@@ -353,8 +359,8 @@ class AiDiagnosticsService
      * The service already limits DB fetch to MAX_METRICS; this is an additional
      * prompt-level cap for token budget reasons.
      *
-     * @param  array<\App\Model\Entity\Metric> $metrics Recent metric entities.
-     * @param  array<\App\Model\Entity\Alert>  $alerts  Open alert entities.
+     * @param array<\App\Model\Entity\Metric> $metrics Recent metric entities.
+     * @param array<\App\Model\Entity\Alert>  $alerts  Open alert entities.
      * @return string                          Formatted user prompt string.
      */
     private function buildPrompt(array $metrics, array $alerts): string

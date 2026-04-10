@@ -48,7 +48,7 @@ class HealthController extends AppController
                 ->withType('application/json')
                 ->withStringBody(json_encode(
                     ['status' => 'error', 'detail' => $e->getMessage()],
-                    JSON_THROW_ON_ERROR
+                    JSON_THROW_ON_ERROR,
                 ));
         }
     }

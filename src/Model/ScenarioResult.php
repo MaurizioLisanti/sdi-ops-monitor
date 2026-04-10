@@ -27,9 +27,10 @@ final class ScenarioResult
     public function __construct(
         public readonly string $correlationId,
         public readonly string $scenarioName,
-        public readonly array  $metricsInserted,
-        public readonly array  $alertsCreated,
-        public readonly array  $log,
-        public readonly bool   $dryRun,
-    ) {}
+        public readonly array $metricsInserted,
+        public readonly array $alertsCreated,
+        public readonly array $log,
+        public readonly bool $dryRun,
+    ) {
+    }
 }

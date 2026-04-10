@@ -48,6 +48,12 @@ cs-check: ## Check code style (CakePHP standard)
 cs-fix: ## Auto-fix code style
 	$(COMPOSER) cs-fix
 
+phpcs: ## Run PHPCS with phpcs.xml ruleset (CakePHP standard)
+	$(PHP) ./vendor/bin/phpcs --standard=phpcs.xml src/
+
+phpcbf: ## Auto-fix code style violations with phpcbf
+	$(PHP) ./vendor/bin/phpcbf --standard=phpcs.xml src/ || true
+
 # ── CakePHP CLI ──────────────────────────────────────────────
 
 routes: ## List all registered routes

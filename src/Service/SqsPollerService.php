@@ -3,10 +3,11 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Model\Entity\Metric;
 use App\Model\Table\MetricsTable;
 use Aws\Sqs\SqsClient;
 use Cake\Log\Log;
+use JsonException;
+use Throwable;
 
 /**
  * SqsPollerService — fetches metric messages from AWS SQS and persists them.
@@ -168,7 +169,7 @@ class SqsPollerService
             // Alert evaluation is best-effort — failures must not block queue processing.
             try {
                 $this->alertsService->evaluate($metric, $this->correlationId);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Log::warning(json_encode([
                     'timestamp'      => date('c'),
                     'level'          => 'warning',
@@ -221,7 +222,7 @@ class SqsPollerService
     {
         try {
             $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $e) {
+        } catch (JsonException $e) {
             Log::warning(json_encode([
                 'timestamp'      => date('c'),
                 'level'          => 'warning',
@@ -301,7 +302,7 @@ class SqsPollerService
                 'QueueUrl'      => $this->queueUrl,
                 'ReceiptHandle' => $receiptHandle,
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Log and continue — if delete fails, the message becomes visible
             // again and idempotence will handle the re-delivery.
             Log::warning(json_encode([
