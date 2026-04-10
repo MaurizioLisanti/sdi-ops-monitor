@@ -1,0 +1,118 @@
+# GitHub Actions CI — sdi-ops-monitor
+# Runs on every push and pull request targeting the main branch.
+# Stack: PHP 8.2 / CakePHP 5 / MySQL 8.0 / PHPUnit 10
+#
+# NOTE: config/app.php is gitignored in this project.
+# Before this workflow can pass on GitHub Actions, one of the following
+# is required:
+#   (a) Remove config/app.php from .gitignore and commit the file, OR
+#   (b) Create config/app.php.example and update the "Prepare config" step
+#       below to copy it as well.
+# See coord/HANDOFF_m3_ci_pipeline.md — Risk [R1] for details.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: PHP 8.2 / MySQL 8.0 — test suite
+    runs-on: ubuntu-latest
+
+    # --- MySQL 8.0 service container ---
+    # Credentials are fixed CI-only values — not used in production.
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: sdi_ops_monitor
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    # --- Environment variables injected for the entire job ---
+    # All values here are fixed CI-only credentials — safe to commit.
+    # They are never used outside the ephemeral CI environment.
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root
+      DB_NAME: sdi_ops_monitor
+      # BasicAuthMiddleware requires APP_AUTH_USER and APP_AUTH_PASSWORD.
+      # These CI values are not a secret — the CI environment is ephemeral.
+      APP_AUTH_USER: ci-user
+      APP_AUTH_PASSWORD: ci-password
+      # SECURITY_SALT must be non-empty; value below is CI-only.
+      SECURITY_SALT: ci-salt-not-for-production-use-only
+      # Set a base URL so CakePHP does not throw on fullBaseUrl check.
+      APP_FULL_BASE_URL: http://localhost
+      # Disable debug output to keep CI logs clean.
+      APP_DEBUG: "0"
+      # OPENROUTER_API_KEY intentionally absent — deterministic fallback is active.
+      # AWS env vars intentionally absent — SQS tests use mocks, no real AWS call.
+
+    steps:
+      # ── Source ────────────────────────────────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── PHP runtime ───────────────────────────────────────────────────────────
+      - name: Set up PHP 8.2
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          # pdo_mysql is required by CakePHP MySQL driver.
+          extensions: pdo, pdo_mysql, mbstring, intl
+          # Skip coverage collection in CI to keep the job fast.
+          coverage: none
+
+      # ── Composer cache ────────────────────────────────────────────────────────
+      # Key is based on composer.lock so the cache is invalidated on any
+      # dependency change. The restore-keys fallback allows partial hits.
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-php8.2-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            composer-php8.2-
+
+      # ── Dependencies ──────────────────────────────────────────────────────────
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      # ── Application config ────────────────────────────────────────────────────
+      # config/app_local.php is gitignored; copy from the committed example so
+      # CakePHP can read the DB_ and APP_ env vars injected above.
+      # NOTE: config/app.php is also gitignored — see file-level comment above.
+      - name: Prepare application config
+        run: cp config/app_local.php.example config/app_local.php
+
+      # ── Test database ─────────────────────────────────────────────────────────
+      # CakePHP test suite uses the 'test' datasource; its default database name
+      # is sdi_ops_monitor_test. Create it explicitly so migrations and fixtures
+      # have a valid target even when DB_NAME points to the default database.
+      - name: Create test database
+        run: |
+          mysql -h 127.0.0.1 -u root -proot \
+            -e "CREATE DATABASE IF NOT EXISTS sdi_ops_monitor_test \
+                CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+      # ── Migrations ────────────────────────────────────────────────────────────
+      - name: Run database migrations
+        run: make migrate
+
+      # ── Test suite ────────────────────────────────────────────────────────────
+      # continue-on-error is intentionally NOT set — a test failure must break CI.
+      - name: Run test suite
+        run: make test

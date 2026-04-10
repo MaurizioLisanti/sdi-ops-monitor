@@ -267,16 +267,16 @@
           "last_updated": "2026-04-10T18:00:00Z"
         },
         "TASK_m3_ci_pipeline": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": [],
           "blocks": ["TASK_m3_phpcs"],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
-          "handoff": null,
+          "handoff": "coord/HANDOFF_m3_ci_pipeline.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-10T18:00:00Z",
-          "last_updated": "2026-04-10T18:00:00Z"
+          "last_updated": "2026-04-10T18:30:00Z"
         },
         "TASK_m3_phpcs": {
           "status": "BLOCKED",
@@ -352,11 +352,11 @@
       "planned": true,
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 0,
-      "tasks_done": 0,
+      "percent_done": 20,
+      "tasks_done": 1,
       "tasks_total": 5,
       "requires": "M2 DONE",
-      "next_action": "Step 1 (par): TASK_m3_ai_diagnostics || TASK_m3_ci_pipeline || TASK_m3_runbook"
+      "next_action": "TASK_m3_ci_pipeline DONE. Parallel: TASK_m3_ai_diagnostics || TASK_m3_runbook. TASK_m3_phpcs now unblocked."
     }
   },
 
@@ -379,8 +379,8 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-10T18:00:00Z",
+    "last_updated": "2026-04-10T18:30:00Z",
     "agent_last_run": "claude-sonnet-4-6",
-    "prompt_used": "PROMPT_03_planner_agent_v3"
+    "prompt_used": "PROMPT_04_executor_agent_v3"
   }
 }
