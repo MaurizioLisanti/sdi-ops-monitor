@@ -315,9 +315,9 @@
           "last_updated": "2026-04-10T18:15:00Z"
         }
       },
-      "integration_report": null,
+      "integration_report": "coord/INTEGRATION_REPORT_wave4.md",
       "wave_started": "2026-04-10T18:00:00Z",
-      "wave_completed": null
+      "wave_completed": "2026-04-10T19:00:00Z"
     }
   },
 
@@ -379,7 +379,7 @@
 
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-10T18:45:00Z",
+    "last_updated": "2026-04-10T19:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_04_executor_agent_v3"
   }
