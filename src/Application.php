@@ -120,6 +120,12 @@ class Application extends BaseApplication
         // Log Viewer — SRE-facing read-only view of structured JSON logs.
         // BasicAuthMiddleware enforces authentication for this path automatically.
         $routes->connect('/logs', ['controller' => 'LogViewer', 'action' => 'index']);
+
+        // Scenario Simulator — demo and manual regression tool for SDI/FatturaPA pipelines.
+        // Both routes are protected by BasicAuthMiddleware automatically.
+        // /simulate/run must be registered before any wildcard /simulate/* pattern would match.
+        $routes->connect('/simulate/run', ['controller' => 'ScenarioSimulator', 'action' => 'run']);
+        $routes->connect('/simulate', ['controller' => 'ScenarioSimulator', 'action' => 'index']);
     }
 
     /**
