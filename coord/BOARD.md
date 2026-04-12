@@ -4,6 +4,7 @@
 <!-- [UPDATED: 2026-04-02 — Planner pass: aggiunti tabella ruoli completa, routing agenti, regole worktree, conflict detection, protocollo HANDOFF] -->
 <!-- [UPDATED: 2026-04-03 — Planner pass M1: Wave 2 sbloccata, 5 task M1 pianificati con dipendenze e parallelism matrix] -->
 <!-- [UPDATED: 2026-04-10 — Planner pass M3: Wave 3 DONE, Wave 4 pianificata, 5 task M3, parallelism matrix e sequenza] -->
+<!-- [UPDATED: 2026-04-12 — Planner pass M4: Wave 4 → DONE, Wave 5 pianificata, 7 task M4, parallelism matrix, sequenza; W3 INTEGRATION_REPORT smoke_test → PASS] -->
 
 ---
 
@@ -179,17 +180,18 @@ Vedere `coord/INTEGRATION_REPORT_wave3.md` per dettaglio. Osservazioni non blocc
 
 ---
 
-## Wave 4 — M3 · Demo Ready 🚀 IN PROGRESS
+## Wave 4 — M3 · Demo Ready ✅ DONE
 
 <!-- [UPDATED: 2026-04-10 — Planner pass M3: Wave 4 pianificata, 5 task] -->
+<!-- [UPDATED: 2026-04-12 — Planner pass M4: Wave 4 marcata DONE, Wave 5 pianificata; W3 smoke_test_after_merge → PASS] -->
 
 | # | Task | Titolo | Assegnatario | Status | Dipende da | Risk | Agente |
 |---|------|--------|-------------|--------|------------|------|--------|
-| 1 | TASK_m3_ai_diagnostics | OpenRouter AI diagnostics + fallback | Executor | **TODO** | — | MED | Codex / Qwen |
-| 1 | TASK_m3_ci_pipeline | GitHub Actions CI pipeline | Executor | **TODO** | — | LOW | Claude |
-| 1 | TASK_m3_runbook | Runbook operativo | Executor | **TODO** | — | LOW | Claude |
-| 2 | TASK_m3_fix_wave3_obs | Fix OBS-1…OBS-4 da Integration Report W3 | Executor | BLOCKED | ai_diagnostics | LOW | Claude |
-| 2 | TASK_m3_phpcs | PHPCS PSR-12 code style check | Executor | BLOCKED | ci_pipeline | LOW | Claude |
+| 1 | TASK_m3_ai_diagnostics | OpenRouter AI diagnostics + fallback | Executor | **DONE** | — | MED | Codex / Qwen |
+| 1 | TASK_m3_ci_pipeline | GitHub Actions CI pipeline | Executor | **DONE** | — | LOW | Claude |
+| 1 | TASK_m3_runbook | Runbook operativo | Executor | **DONE** | — | LOW | Claude |
+| 2 | TASK_m3_fix_wave3_obs | Fix OBS-1…OBS-4 da Integration Report W3 | Executor | **DONE** | ai_diagnostics | LOW | Claude |
+| 2 | TASK_m3_phpcs | PHPCS CakePHP standard + phpcbf 105 fixes + CI step | Executor | **DONE** | ci_pipeline | LOW | Claude |
 
 ### Parallelism matrix Wave 4
 
@@ -211,7 +213,63 @@ Step 2 (par):  TASK_m3_fix_wave3_obs        ║  TASK_m3_phpcs
 ```
 
 ### Exit condition Wave 4
-Tutti i 5 task DONE + `make test` PASS + `GET /ai-diagnostics` 200 + CI green + `make phpcs` OK + `docs/RUNBOOK.md` presente.
+✅ Soddisfatta — 5/5 DONE + `make test` PASS (35/35, 106 assertions) + CI green + PHPCS configurato (baseline 265 errors, continue-on-error:true) + `docs/RUNBOOK.md` presente (692 righe).
+Vedere `coord/INTEGRATION_REPORT_wave4.md` per dettaglio. Avvertimenti non bloccanti: W1, W2, W3 (risolti in M4).
+
+---
+
+## Wave 5 — M4 · AWS Real Deploy 🚀 IN PROGRESS
+
+<!-- [UPDATED: 2026-04-12 — Planner pass M4: Wave 5 pianificata, 7 task, parallelism matrix, sequenza] -->
+
+| # | Task | Titolo | Assegnatario | Status | Dipende da | Risk | Agente |
+|---|------|--------|-------------|--------|------------|------|--------|
+| 1 | TASK_m4_eb_infra | EB environment + PHP 8.2 + .ebextensions scaffold | Executor | **TODO** | — | MED | Codex / Qwen |
+| 2 | TASK_m4_env_vars | EB environment variables (secrets management) | Executor | BLOCKED | eb_infra | HIGH | Codex / umano |
+| 2 | TASK_m4_cloudwatch | CloudWatch logs + metric filters + alarms | Executor | BLOCKED | eb_infra | MED | Codex / Qwen |
+| 2 | TASK_m4_govway_mtls | GovWay/mTLS SSL + proxy headers config | Executor | BLOCKED | eb_infra | HIGH | Codex / umano |
+| 3 | TASK_m4_rds_config | RDS MySQL 8.0 + CakePHP connection + migration | Executor | BLOCKED | env_vars | MED | Codex / Qwen |
+| 4 | TASK_m4_sqs_worker | Real SQS worker (cron via .ebextensions) | Executor | BLOCKED | rds_config | HIGH | Codex / umano |
+| 4 | TASK_m4_healthcheck_aws | Health check verification on AWS EB | Executor | BLOCKED | rds_config | LOW | Claude |
+
+### Parallelism matrix Wave 5
+
+| Task A | Task B | Parallelo? | Motivo |
+|--------|--------|-----------|--------|
+| TASK_m4_eb_infra | qualsiasi altro | NO | deve essere primo — crea l'ambiente EB |
+| TASK_m4_env_vars | TASK_m4_cloudwatch | **SÌ** | path disgiunti (config/app.php.example vs .ebextensions/05) |
+| TASK_m4_env_vars | TASK_m4_govway_mtls | ⚠️ ATTENZIONE | entrambi toccano config/app.php — assegnare allo stesso agente in sequenza |
+| TASK_m4_cloudwatch | TASK_m4_govway_mtls | ⚠️ ATTENZIONE | govway_mtls tocca config/app.php; cloudwatch solo .ebextensions/05 — parallelo possibile con merge attento |
+| TASK_m4_rds_config | TASK_m4_cloudwatch | **SÌ** | path disgiunti — cloudwatch non dipende da rds_config |
+| TASK_m4_rds_config | TASK_m4_govway_mtls | ⚠️ ATTENZIONE | entrambi toccano config/app.php — seriale obbligatorio o merge attento |
+| TASK_m4_sqs_worker | TASK_m4_healthcheck_aws | **SÌ** | path disgiunti (src/Command/ vs .ebextensions/09) — entrambi step 4 |
+
+### Sequenza di esecuzione Wave 5
+
+```
+Step 1 (seq):  TASK_m4_eb_infra
+                        ↓
+Step 2 (par):  TASK_m4_env_vars  ║  TASK_m4_cloudwatch
+               TASK_m4_govway_mtls  (seriale dopo env_vars — config/app.php overlap)
+                        ↓ (dopo env_vars)
+Step 3 (seq):  TASK_m4_rds_config
+                        ↓
+Step 4 (par):  TASK_m4_sqs_worker  ║  TASK_m4_healthcheck_aws
+```
+
+Sequenza raccomandata considerando gli overlap su `config/app.php`:
+```
+Step 1:  TASK_m4_eb_infra
+Step 2a: TASK_m4_env_vars         (tocca config/app.php.example + .ebextensions/03)
+Step 2b: TASK_m4_cloudwatch        (parallelo con env_vars — path disgiunti)
+Step 2c: TASK_m4_govway_mtls       (dopo env_vars — config/app.php)
+Step 3:  TASK_m4_rds_config        (dopo env_vars — config/app.php)
+Step 4a: TASK_m4_sqs_worker        (dopo rds_config)
+Step 4b: TASK_m4_healthcheck_aws   (dopo rds_config — parallelo con sqs_worker)
+```
+
+### Exit condition Wave 5
+Tutti i 7 task DONE + `eb status` Health:Ok + `GET https://<eb-url>/health` → 200 + RDS connesso + SQS worker attivo (eb logs) + CloudWatch alarms configurati + `docs/govway_mtls.md` presente + `make test` PASS (35/35, nessuna regressione locale).
 
 ---
 
