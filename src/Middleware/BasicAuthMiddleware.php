@@ -18,8 +18,8 @@ use Psr\Http\Server\RequestHandlerInterface;
  * always receive a response without needing credentials.
  *
  * Expected environment variables:
- *   APP_AUTH_USER     — required username (plain text)
- *   APP_AUTH_PASSWORD — required password (plain text)
+ * APP_AUTH_USER — required username (plain text)
+ * APP_AUTH_PASSWORD — required password (plain text)
  *
  * If either variable is unset or empty the middleware denies every request
  * (fail-closed design). Credentials are never logged; only the attempted
@@ -47,7 +47,7 @@ class BasicAuthMiddleware implements MiddlewareInterface
      * All other requests must supply a valid Authorization: Basic header whose
      * decoded credentials match APP_AUTH_USER and APP_AUTH_PASSWORD.
      *
-     * @param \Psr\Http\Message\ServerRequestInterface  $request The incoming server request.
+     * @param \Psr\Http\Message\ServerRequestInterface $request The incoming server request.
      * @param \Psr\Http\Server\RequestHandlerInterface $handler The next handler in the middleware stack.
      * @return \Psr\Http\Message\ResponseInterface 401 with WWW-Authenticate on failure, downstream response on success.
      */
@@ -123,13 +123,13 @@ class BasicAuthMiddleware implements MiddlewareInterface
      * timing-based side-channel attacks. The method returns false immediately
      * when either environment variable is absent — fail-closed default.
      *
-     * @param string $providedUser     Username decoded from the Authorization header.
+     * @param string $providedUser Username decoded from the Authorization header.
      * @param string $providedPassword Password decoded from the Authorization header.
      * @return bool True only when both username and password match exactly.
      */
     private function isAuthenticated(string $providedUser, string $providedPassword): bool
     {
-        $expectedUser     = (string)env('APP_AUTH_USER', '');
+        $expectedUser = (string)env('APP_AUTH_USER', '');
         $expectedPassword = (string)env('APP_AUTH_PASSWORD', '');
 
         // Deny when credentials are not configured — prevents accidental open access.
@@ -166,8 +166,8 @@ class BasicAuthMiddleware implements MiddlewareInterface
      * Only the attempted username is logged (not the password) to support
      * brute-force detection while avoiding credential exposure in log storage.
      *
-     * @param \Psr\Http\Message\ServerRequestInterface $request       The request that failed authentication.
-     * @param string                                   $attemptedUser Username from the Authorization header (may be empty).
+     * @param \Psr\Http\Message\ServerRequestInterface $request The request that failed authentication.
+     * @param string $attemptedUser Username from the Authorization header (may be empty).
      * @return void
      */
     private function logAuthFailure(ServerRequestInterface $request, string $attemptedUser): void
@@ -177,9 +177,9 @@ class BasicAuthMiddleware implements MiddlewareInterface
         Log::warning('HTTP Basic Auth failed', [
             'correlation_id' => $correlationId,
             'attempted_user' => $attemptedUser !== '' ? $attemptedUser : null,
-            'path'           => $request->getUri()->getPath(),
-            'method'         => $request->getMethod(),
-            'ip'             => $request->getServerParams()['REMOTE_ADDR'] ?? null,
+            'path' => $request->getUri()->getPath(),
+            'method' => $request->getMethod(),
+            'ip' => $request->getServerParams()['REMOTE_ADDR'] ?? null,
         ]);
     }
 }

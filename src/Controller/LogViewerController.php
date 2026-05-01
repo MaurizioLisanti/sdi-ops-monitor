@@ -19,7 +19,7 @@ use SplFileObject;
  * derived from user input, preventing path-traversal attacks (TASK A5).
  *
  * Routes:
- *   GET /logs  → index()
+ * GET /logs → index()
  */
 class LogViewerController extends AppController
 {
@@ -60,45 +60,45 @@ class LogViewerController extends AppController
      * triggering a 500 error.
      *
      * Query parameters accepted:
-     *   ?lines=N               — tail line count (default: 200, max: 1000)
-     *   ?level=<string>        — filter by level (debug|info|warning|error|critical)
-     *   ?correlation_id=<uuid> — filter by exact correlation ID
+     * ?lines=N — tail line count (default: 200, max: 1000)
+     * ?level=<string> — filter by level (debug|info|warning|error|critical)
+     * ?correlation_id=<uuid> — filter by exact correlation ID
      *
      * @return void CakePHP renders templates/LogViewer/index.php automatically.
      */
     public function index(): void
     {
-        $lineCount         = $this->resolveLineCount();
-        $levelFilter       = $this->resolveLevelFilter();
+        $lineCount = $this->resolveLineCount();
+        $levelFilter = $this->resolveLevelFilter();
         $correlationFilter = trim((string)($this->request->getQuery('correlation_id') ?? ''));
 
         if (!file_exists(self::LOG_FILE_PATH)) {
             $this->set([
-                'entries'           => [],
-                'logFileFound'      => false,
-                'lineCount'         => $lineCount,
-                'levelFilter'       => $levelFilter,
+                'entries' => [],
+                'logFileFound' => false,
+                'lineCount' => $lineCount,
+                'levelFilter' => $levelFilter,
                 'correlationFilter' => $correlationFilter,
-                'validLevels'       => self::VALID_LEVELS,
+                'validLevels' => self::VALID_LEVELS,
             ]);
 
             return;
         }
 
         $rawLines = $this->readLastLines(self::LOG_FILE_PATH, $lineCount);
-        $entries  = $this->parseLines($rawLines);
-        $entries  = $this->applyFilters($entries, $levelFilter, $correlationFilter);
+        $entries = $this->parseLines($rawLines);
+        $entries = $this->applyFilters($entries, $levelFilter, $correlationFilter);
 
         // Reverse so the newest log entry appears at the top of the table.
         $entries = array_reverse($entries);
 
         $this->set([
-            'entries'           => $entries,
-            'logFileFound'      => true,
-            'lineCount'         => $lineCount,
-            'levelFilter'       => $levelFilter,
+            'entries' => $entries,
+            'logFileFound' => true,
+            'lineCount' => $lineCount,
+            'levelFilter' => $levelFilter,
             'correlationFilter' => $correlationFilter,
-            'validLevels'       => self::VALID_LEVELS,
+            'validLevels' => self::VALID_LEVELS,
         ]);
     }
 
@@ -140,9 +140,9 @@ class LogViewerController extends AppController
      * and streams only the required tail. This avoids the OOM risk of file()
      * on log files larger than 200 MiB while preserving the same return contract.
      *
-     * @param string        $path  Absolute path to the log file.
-     * @param int           $count Number of tail lines to return (≥ 1).
-     * @return array<string>        Raw log line strings, oldest first, empty lines excluded.
+     * @param string $path Absolute path to the log file.
+     * @param int $count Number of tail lines to return (≥ 1).
+     * @return array<string> Raw log line strings, oldest first, empty lines excluded.
      */
     private function readLastLines(string $path, int $count): array
     {
@@ -180,7 +180,7 @@ class LogViewerController extends AppController
      * A line that cannot be decoded is returned as a 'raw' entry so no log
      * output is silently discarded (e.g. startup banners or plain-text entries).
      *
-     * @param array<string>          $lines Raw log line strings.
+     * @param array<string> $lines Raw log line strings.
      * @return array<array<string, mixed>> Parsed log entry arrays.
      */
     private function parseLines(array $lines): array
@@ -193,25 +193,25 @@ class LogViewerController extends AppController
             if (is_array($decoded)) {
                 $contextRaw = $decoded['context'] ?? null;
                 $entries[] = [
-                    'timestamp'      => (string)($decoded['timestamp'] ?? ''),
-                    'level'          => strtolower((string)($decoded['level'] ?? 'info')),
-                    'message'        => (string)($decoded['message'] ?? ''),
+                    'timestamp' => (string)($decoded['timestamp'] ?? ''),
+                    'level' => strtolower((string)($decoded['level'] ?? 'info')),
+                    'message' => (string)($decoded['message'] ?? ''),
                     'correlation_id' => (string)($decoded['correlation_id'] ?? ''),
                     // Compact JSON for context column — reduces visual noise in the table.
-                    'context'        => $contextRaw !== null
+                    'context' => $contextRaw !== null
                         ? (string)json_encode($contextRaw, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)
                         : '',
-                    'raw'            => false,
+                    'raw' => false,
                 ];
             } else {
                 // Non-JSON line surfaced verbatim — no log output is silently lost.
                 $entries[] = [
-                    'timestamp'      => '',
-                    'level'          => 'raw',
-                    'message'        => $line,
+                    'timestamp' => '',
+                    'level' => 'raw',
+                    'message' => $line,
                     'correlation_id' => '',
-                    'context'        => '',
-                    'raw'            => true,
+                    'context' => '',
+                    'raw' => true,
                 ];
             }
         }
@@ -225,9 +225,9 @@ class LogViewerController extends AppController
      * An empty string for either parameter disables that filter dimension.
      * When both are set they are combined with AND logic (both must match).
      *
-     * @param array<array<string, mixed>> $entries           Parsed log entry arrays.
-     * @param string                      $levelFilter       Log level to keep, or '' for all.
-     * @param string                      $correlationFilter Exact correlation ID to keep, or '' for all.
+     * @param array<array<string, mixed>> $entries Parsed log entry arrays.
+     * @param string $levelFilter Log level to keep, or '' for all.
+     * @param string $correlationFilter Exact correlation ID to keep, or '' for all.
      * @return array<array<string, mixed>> Filtered and re-indexed log entry arrays.
      */
     private function applyFilters(array $entries, string $levelFilter, string $correlationFilter): array

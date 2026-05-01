@@ -21,10 +21,10 @@ use RuntimeException;
  * Threshold configuration (via app_local.php → Configure::read('Thresholds')):
  * ```php
  * 'Thresholds' => [
- *     'cpu_usage' => [
- *         ['threshold' => 80.0, 'severity' => 'high'],
- *         ['threshold' => 95.0, 'severity' => 'critical'],
- *     ],
+ * 'cpu_usage' => [
+ * ['threshold' => 80.0, 'severity' => 'high'],
+ * ['threshold' => 95.0, 'severity' => 'critical'],
+ * ],
  * ],
  * ```
  *
@@ -78,25 +78,25 @@ class AlertsService
      *
      * All outcomes are logged as single-line JSON entries compatible with Kibana/ELK.
      *
-     * @param \App\Model\Entity\Metric $metric       The metric entity just saved to the database.
-     * @param string                   $correlationId X-Correlation-ID from the originating request.
+     * @param \App\Model\Entity\Metric $metric The metric entity just saved to the database.
+     * @param string $correlationId X-Correlation-ID from the originating request.
      * @return \App\Model\Entity\Alert|null The created Alert on threshold breach, null otherwise.
      * @throws \RuntimeException When AlertsTable::save() fails (caller should log and continue).
      */
     public function evaluate(Metric $metric, string $correlationId = ''): ?Alert
     {
-        $metricName  = (string)$metric->name;
+        $metricName = (string)$metric->name;
         $metricValue = (float)$metric->value;
 
         $rules = $this->resolveThresholds($metricName);
 
         if ($rules === null) {
             Log::debug(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'debug',
+                'timestamp' => date('c'),
+                'level' => 'debug',
                 'correlation_id' => $correlationId,
-                'message'        => 'No thresholds configured for metric — skipping alert evaluation.',
-                'context'        => ['metric_name' => $metricName, 'metric_value' => $metricValue],
+                'message' => 'No thresholds configured for metric — skipping alert evaluation.',
+                'context' => ['metric_name' => $metricName, 'metric_value' => $metricValue],
             ], JSON_THROW_ON_ERROR));
 
             return null;
@@ -106,11 +106,11 @@ class AlertsService
 
         if ($severity === null) {
             Log::info(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'info',
+                'timestamp' => date('c'),
+                'level' => 'info',
                 'correlation_id' => $correlationId,
-                'message'        => 'Metric value is below all thresholds — no alert created.',
-                'context'        => ['metric_name' => $metricName, 'metric_value' => $metricValue],
+                'message' => 'Metric value is below all thresholds — no alert created.',
+                'context' => ['metric_name' => $metricName, 'metric_value' => $metricValue],
             ], JSON_THROW_ON_ERROR));
 
             return null;
@@ -126,23 +126,23 @@ class AlertsService
 
         $alert = $this->alertsTable->newEntity([
             'metric_id' => $metric->id ?? null,
-            'severity'  => $severity,
-            'message'   => $message,
-            'status'    => 'open',
+            'severity' => $severity,
+            'message' => $message,
+            'status' => 'open',
         ]);
 
         if (!$this->alertsTable->save($alert)) {
             $errorDetails = $alert->getErrors();
 
             Log::error(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'error',
+                'timestamp' => date('c'),
+                'level' => 'error',
                 'correlation_id' => $correlationId,
-                'message'        => 'Failed to persist alert entity.',
-                'context'        => [
-                    'metric_name'   => $metricName,
-                    'metric_value'  => $metricValue,
-                    'severity'      => $severity,
+                'message' => 'Failed to persist alert entity.',
+                'context' => [
+                    'metric_name' => $metricName,
+                    'metric_value' => $metricValue,
+                    'severity' => $severity,
                     'entity_errors' => $errorDetails,
                 ],
             ], JSON_THROW_ON_ERROR));
@@ -153,15 +153,15 @@ class AlertsService
         }
 
         Log::warning(json_encode([
-            'timestamp'      => date('c'),
-            'level'          => 'warning',
+            'timestamp' => date('c'),
+            'level' => 'warning',
             'correlation_id' => $correlationId,
-            'message'        => 'Alert created — metric threshold breached.',
-            'context'        => [
-                'alert_id'     => $alert->id,
-                'metric_name'  => $metricName,
+            'message' => 'Alert created — metric threshold breached.',
+            'context' => [
+                'alert_id' => $alert->id,
+                'metric_name' => $metricName,
                 'metric_value' => $metricValue,
-                'severity'     => $severity,
+                'severity' => $severity,
             ],
         ], JSON_THROW_ON_ERROR));
 
@@ -196,13 +196,13 @@ class AlertsService
      * Iterates all rules and picks the one with the highest position in SEVERITY_ORDER.
      * Returns null when no rule is triggered (value is below every threshold).
      *
-     * @param list<array{threshold: float, severity: string}> $rules       Ordered set of threshold rules.
-     * @param float                                           $metricValue The measured metric value.
+     * @param list<array{threshold: float, severity: string}> $rules Ordered set of threshold rules.
+     * @param float $metricValue The measured metric value.
      * @return string|null The winning severity string, or null if no threshold is breached.
      */
     private function resolveHighestSeverity(array $rules, float $metricValue): ?string
     {
-        $bestSeverity   = null;
+        $bestSeverity = null;
         $bestSeverityPos = -1;
 
         foreach ($rules as $rule) {
@@ -211,7 +211,7 @@ class AlertsService
 
                 if ($pos !== false && $pos > $bestSeverityPos) {
                     $bestSeverityPos = $pos;
-                    $bestSeverity    = $rule['severity'];
+                    $bestSeverity = $rule['severity'];
                 }
             }
         }

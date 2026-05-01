@@ -22,16 +22,16 @@ use Cake\Utility\Text;
  * persists valid ones via MetricsTable, and evaluates alert thresholds.
  *
  * Usage:
- *   bin/cake sqs_poll
- *   bin/cake sqs_poll --max-messages=5
- *   bin/cake sqs_poll --dry-run
+ * bin/cake sqs_poll
+ * bin/cake sqs_poll --max-messages=5
+ * bin/cake sqs_poll --dry-run
  *
  * Environment variables required (never hardcode):
- *   AWS_SQS_QUEUE_URL      — full SQS queue URL
- *   AWS_REGION             — AWS region, e.g. eu-west-1
- *   AWS_ACCESS_KEY_ID      — optional when using IAM instance/task role
- *   AWS_SECRET_ACCESS_KEY  — optional when using IAM instance/task role
- *   AWS_SESSION_TOKEN      — optional for temporary IAM role credentials
+ * AWS_SQS_QUEUE_URL — full SQS queue URL
+ * AWS_REGION — AWS region, e.g. eu-west-1
+ * AWS_ACCESS_KEY_ID — optional when using IAM instance/task role
+ * AWS_SECRET_ACCESS_KEY — optional when using IAM instance/task role
+ * AWS_SESSION_TOKEN — optional for temporary IAM role credentials
  */
 class SqsPollCommand extends Command
 {
@@ -64,15 +64,15 @@ class SqsPollCommand extends Command
         $parser
             ->setDescription('Poll an AWS SQS queue and persist incoming metric messages.')
             ->addOption('max-messages', [
-                'help'    => 'Maximum number of messages to receive per run (1–10, SQS limit).',
+                'help' => 'Maximum number of messages to receive per run (1–10, SQS limit).',
                 'default' => 10,
-                'short'   => 'm',
+                'short' => 'm',
             ])
             ->addOption('dry-run', [
-                'help'    => 'Parse and validate messages without persisting or deleting them.',
+                'help' => 'Parse and validate messages without persisting or deleting them.',
                 'boolean' => true,
                 'default' => false,
-                'short'   => 'd',
+                'short' => 'd',
             ]);
 
         return $parser;
@@ -101,24 +101,24 @@ class SqsPollCommand extends Command
      * not an error condition. Exits CODE_ERROR only on fatal configuration
      * problems (e.g. missing queue URL).
      *
-     * @param \Cake\Console\Arguments  $args Parsed CLI arguments and options.
-     * @param \Cake\Console\ConsoleIo  $io   Console input/output interface.
+     * @param \Cake\Console\Arguments $args Parsed CLI arguments and options.
+     * @param \Cake\Console\ConsoleIo $io Console input/output interface.
      * @return int Command::CODE_SUCCESS (0) or Command::CODE_ERROR (1).
      */
     public function execute(Arguments $args, ConsoleIo $io): int
     {
         $correlationId = Text::uuid();
-        $maxMessages   = (int)$args->getOption('max-messages');
-        $dryRun        = (bool)$args->getOption('dry-run');
+        $maxMessages = (int)$args->getOption('max-messages');
+        $dryRun = (bool)$args->getOption('dry-run');
 
         $io->out(json_encode([
-            'timestamp'      => date('c'),
-            'level'          => 'info',
+            'timestamp' => date('c'),
+            'level' => 'info',
             'correlation_id' => $correlationId,
-            'message'        => 'SQS poll started.',
-            'context'        => [
+            'message' => 'SQS poll started.',
+            'context' => [
                 'max_messages' => $maxMessages,
-                'dry_run'      => $dryRun,
+                'dry_run' => $dryRun,
             ],
         ], JSON_THROW_ON_ERROR));
 
@@ -129,11 +129,11 @@ class SqsPollCommand extends Command
 
             if ($queueUrl === '') {
                 $io->error(json_encode([
-                    'timestamp'      => date('c'),
-                    'level'          => 'error',
+                    'timestamp' => date('c'),
+                    'level' => 'error',
                     'correlation_id' => $correlationId,
-                    'message'        => 'AWS_SQS_QUEUE_URL is not set — cannot poll.',
-                    'context'        => [],
+                    'message' => 'AWS_SQS_QUEUE_URL is not set — cannot poll.',
+                    'context' => [],
                 ], JSON_THROW_ON_ERROR));
 
                 return self::CODE_ERROR;
@@ -145,13 +145,13 @@ class SqsPollCommand extends Command
         $processed = $service->poll($maxMessages, $dryRun);
 
         $io->out(json_encode([
-            'timestamp'      => date('c'),
-            'level'          => 'info',
+            'timestamp' => date('c'),
+            'level' => 'info',
             'correlation_id' => $correlationId,
-            'message'        => 'SQS poll completed.',
-            'context'        => [
+            'message' => 'SQS poll completed.',
+            'context' => [
                 'messages_processed' => count($processed),
-                'dry_run'            => $dryRun,
+                'dry_run' => $dryRun,
             ],
         ], JSON_THROW_ON_ERROR));
 
@@ -166,7 +166,7 @@ class SqsPollCommand extends Command
      * the SDK falls back to the EC2/ECS instance role credential chain
      * (instance metadata service), which is the preferred production mode.
      *
-     * @param string $queueUrl      Full SQS queue URL from AWS_SQS_QUEUE_URL.
+     * @param string $queueUrl Full SQS queue URL from AWS_SQS_QUEUE_URL.
      * @param string $correlationId UUID v4 for this polling run.
      * @return \App\Service\SqsPollerService
      */
@@ -176,7 +176,7 @@ class SqsPollCommand extends Command
 
         $clientConfig = [
             'version' => 'latest',
-            'region'  => $region,
+            'region' => $region,
         ];
 
         // Only set explicit credentials when provided; otherwise the SDK uses
@@ -186,7 +186,7 @@ class SqsPollCommand extends Command
 
         if ($accessKey && $secretKey) {
             $clientConfig['credentials'] = [
-                'key'    => (string)$accessKey,
+                'key' => (string)$accessKey,
                 'secret' => (string)$secretKey,
             ];
 

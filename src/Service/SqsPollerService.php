@@ -17,16 +17,16 @@ use Throwable;
  * alert evaluation via AlertsService, and then deletes the message from SQS.
  *
  * Retry policy (explicit):
- *   - Unparsable/invalid messages → deleted immediately; retrying is pointless.
- *   - Valid messages that fail to save → NOT deleted; SQS visibility timeout
- *     causes automatic re-delivery after the configured timeout period.
- *     Infrastructure teams should configure a Dead Letter Queue (DLQ) on the
- *     SQS queue itself to capture messages that exceed maxReceiveCount.
+ * - Unparsable/invalid messages → deleted immediately; retrying is pointless.
+ * - Valid messages that fail to save → NOT deleted; SQS visibility timeout
+ * causes automatic re-delivery after the configured timeout period.
+ * Infrastructure teams should configure a Dead Letter Queue (DLQ) on the
+ * SQS queue itself to capture messages that exceed maxReceiveCount.
  *
  * Idempotence:
- *   - Before saving, the service checks whether a metric with the same
- *     source + name + recorded_at already exists. Duplicate messages are
- *     deleted from the queue without creating a second DB record.
+ * - Before saving, the service checks whether a metric with the same
+ * source + name + recorded_at already exists. Duplicate messages are
+ * deleted from the queue without creating a second DB record.
  *
  * Credentials are never stored in this class — the SqsClient is built by the
  * caller using environment variables only.
@@ -41,11 +41,11 @@ class SqsPollerService
     private const REQUIRED_FIELDS = ['source', 'name', 'value', 'recorded_at'];
 
     /**
-     * @param \Aws\Sqs\SqsClient           $sqsClient     Pre-configured SQS client.
-     * @param \App\Model\Table\MetricsTable $metricsTable  Persistence layer for Metric entities.
-     * @param \App\Service\AlertsService    $alertsService Threshold evaluation service.
-     * @param string                        $queueUrl      Full SQS queue URL from env.
-     * @param string                        $correlationId UUID v4 for this polling run.
+     * @param \Aws\Sqs\SqsClient $sqsClient Pre-configured SQS client.
+     * @param \App\Model\Table\MetricsTable $metricsTable Persistence layer for Metric entities.
+     * @param \App\Service\AlertsService $alertsService Threshold evaluation service.
+     * @param string $queueUrl Full SQS queue URL from env.
+     * @param string $correlationId UUID v4 for this polling run.
      */
     public function __construct(
         private readonly SqsClient $sqsClient,
@@ -66,8 +66,8 @@ class SqsPollerService
      * persist them and does NOT delete them from the queue. Messages will
      * become visible again after the SQS visibility timeout.
      *
-     * @param int  $maxMessages Maximum messages to fetch per invocation (1–10).
-     * @param bool $dryRun      When true, parse only — no DB writes, no deletes.
+     * @param int $maxMessages Maximum messages to fetch per invocation (1–10).
+     * @param bool $dryRun When true, parse only — no DB writes, no deletes.
      * @return list<\App\Model\Entity\Metric> Persisted Metric entities (empty in dry-run).
      */
     public function poll(int $maxMessages = 10, bool $dryRun = false): array
@@ -76,21 +76,21 @@ class SqsPollerService
         $maxMessages = max(1, min(10, $maxMessages));
 
         $result = $this->sqsClient->receiveMessage([
-            'QueueUrl'            => $this->queueUrl,
+            'QueueUrl' => $this->queueUrl,
             'MaxNumberOfMessages' => $maxMessages,
             // Short poll — the cron interval controls scheduling, not long-poll.
-            'WaitTimeSeconds'     => 0,
+            'WaitTimeSeconds' => 0,
         ]);
 
         $messages = $result->get('Messages') ?? [];
 
         if (empty($messages)) {
             Log::info(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'info',
+                'timestamp' => date('c'),
+                'level' => 'info',
                 'correlation_id' => $this->correlationId,
-                'message'        => 'SQS queue is empty — no messages to process.',
-                'context'        => ['queue_url' => $this->queueUrl, 'dry_run' => $dryRun],
+                'message' => 'SQS queue is empty — no messages to process.',
+                'context' => ['queue_url' => $this->queueUrl, 'dry_run' => $dryRun],
             ], JSON_THROW_ON_ERROR));
 
             return [];
@@ -100,8 +100,8 @@ class SqsPollerService
 
         foreach ($messages as $message) {
             $receiptHandle = (string)($message['ReceiptHandle'] ?? '');
-            $body          = (string)($message['Body'] ?? '');
-            $messageId     = (string)($message['MessageId'] ?? '');
+            $body = (string)($message['Body'] ?? '');
+            $messageId = (string)($message['MessageId'] ?? '');
 
             $data = $this->parseMessageBody($body, $messageId);
 
@@ -115,15 +115,15 @@ class SqsPollerService
 
             if ($dryRun) {
                 Log::info(json_encode([
-                    'timestamp'      => date('c'),
-                    'level'          => 'info',
+                    'timestamp' => date('c'),
+                    'level' => 'info',
                     'correlation_id' => $this->correlationId,
-                    'message'        => 'Dry-run: message parsed successfully — skipping persist and delete.',
-                    'context'        => [
+                    'message' => 'Dry-run: message parsed successfully — skipping persist and delete.',
+                    'context' => [
                         'message_id' => $messageId,
-                        'source'     => $data['source'],
-                        'name'       => $data['name'],
-                        'value'      => $data['value'],
+                        'source' => $data['source'],
+                        'name' => $data['name'],
+                        'value' => $data['value'],
                     ],
                 ], JSON_THROW_ON_ERROR));
                 continue;
@@ -132,14 +132,14 @@ class SqsPollerService
             // Idempotence guard: skip if an identical metric already exists.
             if ($this->isAlreadyPersisted($data['source'], $data['name'], $data['recorded_at'])) {
                 Log::info(json_encode([
-                    'timestamp'      => date('c'),
-                    'level'          => 'info',
+                    'timestamp' => date('c'),
+                    'level' => 'info',
                     'correlation_id' => $this->correlationId,
-                    'message'        => 'Duplicate SQS message detected — metric already persisted, deleting from queue.',
-                    'context'        => [
-                        'message_id'  => $messageId,
-                        'source'      => $data['source'],
-                        'name'        => $data['name'],
+                    'message' => 'Duplicate SQS message detected — metric already persisted, deleting from queue.',
+                    'context' => [
+                        'message_id' => $messageId,
+                        'source' => $data['source'],
+                        'name' => $data['name'],
                         'recorded_at' => $data['recorded_at'],
                     ],
                 ], JSON_THROW_ON_ERROR));
@@ -152,15 +152,15 @@ class SqsPollerService
             if (!$this->metricsTable->save($metric)) {
                 // Do NOT delete — SQS visibility timeout will redeliver for retry.
                 Log::error(json_encode([
-                    'timestamp'      => date('c'),
-                    'level'          => 'error',
+                    'timestamp' => date('c'),
+                    'level' => 'error',
                     'correlation_id' => $this->correlationId,
-                    'message'        => 'Failed to persist metric from SQS message — will retry via visibility timeout.',
-                    'context'        => [
-                        'message_id'    => $messageId,
+                    'message' => 'Failed to persist metric from SQS message — will retry via visibility timeout.',
+                    'context' => [
+                        'message_id' => $messageId,
                         'entity_errors' => $metric->getErrors(),
-                        'source'        => $data['source'],
-                        'name'          => $data['name'],
+                        'source' => $data['source'],
+                        'name' => $data['name'],
                     ],
                 ], JSON_THROW_ON_ERROR));
                 continue;
@@ -171,14 +171,14 @@ class SqsPollerService
                 $this->alertsService->evaluate($metric, $this->correlationId);
             } catch (Throwable $e) {
                 Log::warning(json_encode([
-                    'timestamp'      => date('c'),
-                    'level'          => 'warning',
+                    'timestamp' => date('c'),
+                    'level' => 'warning',
                     'correlation_id' => $this->correlationId,
-                    'message'        => 'Alert evaluation failed — metric saved, alert skipped.',
-                    'context'        => [
+                    'message' => 'Alert evaluation failed — metric saved, alert skipped.',
+                    'context' => [
                         'message_id' => $messageId,
-                        'metric_id'  => $metric->id,
-                        'error'      => $e->getMessage(),
+                        'metric_id' => $metric->id,
+                        'error' => $e->getMessage(),
                     ],
                 ], JSON_THROW_ON_ERROR));
             }
@@ -189,16 +189,16 @@ class SqsPollerService
             $persisted[] = $metric;
 
             Log::info(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'info',
+                'timestamp' => date('c'),
+                'level' => 'info',
                 'correlation_id' => $this->correlationId,
-                'message'        => 'Metric persisted from SQS message.',
-                'context'        => [
+                'message' => 'Metric persisted from SQS message.',
+                'context' => [
                     'message_id' => $messageId,
-                    'metric_id'  => $metric->id,
-                    'source'     => $metric->source,
-                    'name'       => $metric->name,
-                    'value'      => $metric->value,
+                    'metric_id' => $metric->id,
+                    'source' => $metric->source,
+                    'name' => $metric->name,
+                    'value' => $metric->value,
                 ],
             ], JSON_THROW_ON_ERROR));
         }
@@ -214,7 +214,7 @@ class SqsPollerService
      * Invalid messages are logged as warnings and deleted from the queue
      * by the caller (no retry — the payload will always be unparsable).
      *
-     * @param string $body      Raw SQS message body string.
+     * @param string $body Raw SQS message body string.
      * @param string $messageId SQS message ID for log context.
      * @return array<string, mixed>|null Validated data array, or null on failure.
      */
@@ -224,11 +224,11 @@ class SqsPollerService
             $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
             Log::warning(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'warning',
+                'timestamp' => date('c'),
+                'level' => 'warning',
                 'correlation_id' => $this->correlationId,
-                'message'        => 'SQS message body is not valid JSON — deleting from queue.',
-                'context'        => ['message_id' => $messageId, 'error' => $e->getMessage()],
+                'message' => 'SQS message body is not valid JSON — deleting from queue.',
+                'context' => ['message_id' => $messageId, 'error' => $e->getMessage()],
             ], JSON_THROW_ON_ERROR));
 
             return null;
@@ -236,11 +236,11 @@ class SqsPollerService
 
         if (!is_array($data)) {
             Log::warning(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'warning',
+                'timestamp' => date('c'),
+                'level' => 'warning',
                 'correlation_id' => $this->correlationId,
-                'message'        => 'SQS message body is not a JSON object — deleting from queue.',
-                'context'        => ['message_id' => $messageId],
+                'message' => 'SQS message body is not a JSON object — deleting from queue.',
+                'context' => ['message_id' => $messageId],
             ], JSON_THROW_ON_ERROR));
 
             return null;
@@ -249,11 +249,11 @@ class SqsPollerService
         foreach (self::REQUIRED_FIELDS as $field) {
             if (!array_key_exists($field, $data)) {
                 Log::warning(json_encode([
-                    'timestamp'      => date('c'),
-                    'level'          => 'warning',
+                    'timestamp' => date('c'),
+                    'level' => 'warning',
                     'correlation_id' => $this->correlationId,
-                    'message'        => 'SQS message missing required field — deleting from queue.',
-                    'context'        => ['message_id' => $messageId, 'missing_field' => $field],
+                    'message' => 'SQS message missing required field — deleting from queue.',
+                    'context' => ['message_id' => $messageId, 'missing_field' => $field],
                 ], JSON_THROW_ON_ERROR));
 
                 return null;
@@ -270,16 +270,16 @@ class SqsPollerService
      * can arrive. When a match is found, the duplicate is discarded and the
      * message is deleted from the queue without creating a second DB record.
      *
-     * @param string $source     Metric origin system identifier.
-     * @param string $name       Metric name.
+     * @param string $source Metric origin system identifier.
+     * @param string $name Metric name.
      * @param string $recordedAt ISO 8601 timestamp string.
      * @return bool True when an identical metric already exists in the database.
      */
     public function isAlreadyPersisted(string $source, string $name, string $recordedAt): bool
     {
         return $this->metricsTable->exists([
-            'source'      => $source,
-            'name'        => $name,
+            'source' => $source,
+            'name' => $name,
             'recorded_at' => $recordedAt,
         ]);
     }
@@ -292,25 +292,25 @@ class SqsPollerService
      * visibility timeout and be re-processed (idempotence handles the duplicate).
      *
      * @param string $receiptHandle SQS receipt handle from the received message.
-     * @param string $messageId     SQS message ID for log context.
+     * @param string $messageId SQS message ID for log context.
      * @return void
      */
     public function deleteMessage(string $receiptHandle, string $messageId = ''): void
     {
         try {
             $this->sqsClient->deleteMessage([
-                'QueueUrl'      => $this->queueUrl,
+                'QueueUrl' => $this->queueUrl,
                 'ReceiptHandle' => $receiptHandle,
             ]);
         } catch (Throwable $e) {
             // Log and continue — if delete fails, the message becomes visible
             // again and idempotence will handle the re-delivery.
             Log::warning(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'warning',
+                'timestamp' => date('c'),
+                'level' => 'warning',
                 'correlation_id' => $this->correlationId,
-                'message'        => 'Failed to delete SQS message — idempotence will handle re-delivery.',
-                'context'        => ['message_id' => $messageId, 'error' => $e->getMessage()],
+                'message' => 'Failed to delete SQS message — idempotence will handle re-delivery.',
+                'context' => ['message_id' => $messageId, 'error' => $e->getMessage()],
             ], JSON_THROW_ON_ERROR));
         }
     }

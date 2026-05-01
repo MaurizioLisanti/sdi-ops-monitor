@@ -11,7 +11,7 @@ namespace App\Controller;
  * and derives an overall traffic-light status.
  *
  * Routes:
- *   GET /  → index()
+ * GET / → index()
  */
 class DashboardController extends AppController
 {
@@ -19,23 +19,23 @@ class DashboardController extends AppController
      * Render the operations dashboard.
      *
      * Loads the following view variables:
-     *   - $metricsCount     — number of metric events recorded in the last 24 hours
-     *   - $openAlerts       — array of Alert entities with status = 'open', sorted by severity DESC
-     *   - $overallStatus    — traffic-light string: 'green' | 'yellow' | 'red'
-     *   - $highestSeverity  — highest severity among open alerts: 'critical'|'high'|'medium'|'low'|null
-     *   - $alertsBySeverity — per-level count map: ['critical'=>int,'high'=>int,'medium'=>int,'low'=>int]
+     * - $metricsCount — number of metric events recorded in the last 24 hours
+     * - $openAlerts — array of Alert entities with status = 'open', sorted by severity DESC
+     * - $overallStatus — traffic-light string: 'green' | 'yellow' | 'red'
+     * - $highestSeverity — highest severity among open alerts: 'critical'|'high'|'medium'|'low'|null
+     * - $alertsBySeverity — per-level count map: ['critical'=>int,'high'=>int,'medium'=>int,'low'=>int]
      *
      * Traffic-light rules (severity-based — A1):
-     *   red    : at least 1 open alert with severity 'critical' or 'high'
-     *   yellow : at least 1 open alert with severity 'medium' or 'low', none critical/high
-     *   green  : 0 open alerts
+     * red : at least 1 open alert with severity 'critical' or 'high'
+     * yellow : at least 1 open alert with severity 'medium' or 'low', none critical/high
+     * green : 0 open alerts
      *
      * @return void CakePHP renders templates/Dashboard/index.php automatically.
      */
     public function index(): void
     {
         $metricsTable = $this->fetchTable('Metrics');
-        $alertsTable  = $this->fetchTable('Alerts');
+        $alertsTable = $this->fetchTable('Alerts');
 
         // Count metric events recorded in the last 24 hours.
         $metricsCount = $metricsTable->find('recent24h')->count();
@@ -64,9 +64,9 @@ class DashboardController extends AppController
         }
 
         // Severity-based traffic-light: reflects risk level, not raw alert count.
-        // red    = any critical/high alert demands immediate action.
+        // red = any critical/high alert demands immediate action.
         // yellow = only medium/low alerts present, attention needed.
-        // green  = no open alerts.
+        // green = no open alerts.
         if ($alertsBySeverity['critical'] > 0 || $alertsBySeverity['high'] > 0) {
             $overallStatus = 'red';
         } elseif ($alertsBySeverity['medium'] > 0 || $alertsBySeverity['low'] > 0) {

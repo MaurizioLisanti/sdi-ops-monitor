@@ -17,16 +17,16 @@ use Closure;
  * against an Amazon-domain allowlist before any outbound HTTP request is made.
  *
  * Fail-closed design:
- *   - Any validation error (bad domain, unreadable cert, wrong signature, ...) → false
- *   - The controller must treat false as an immediate 400 with no data written.
+ * - Any validation error (bad domain, unreadable cert, wrong signature, ...) → false
+ * - The controller must treat false as an immediate 400 with no data written.
  *
  * Dependency injection:
- *   The optional $httpGet callable allows tests to inject a stub that returns
- *   a pre-generated certificate PEM without making real network requests. The
- *   production default uses file_get_contents() with TLS peer verification.
+ * The optional $httpGet callable allows tests to inject a stub that returns
+ * a pre-generated certificate PEM without making real network requests. The
+ * production default uses file_get_contents() with TLS peer verification.
  *
  * AWS references:
- *   https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
+ * https://docs.aws.amazon.com/sns/latest/dg/sns-verify-signature-of-message.html
  */
 class SnsSignatureValidator
 {
@@ -81,8 +81,8 @@ class SnsSignatureValidator
 
     /**
      * @param callable(string):(string|false)|null $httpGet Optional HTTP GET callable.
-     *        Receives a URL string; must return the response body as a string,
-     *        or false on failure. Defaults to file_get_contents() with TLS verification.
+     * Receives a URL string; must return the response body as a string,
+     * or false on failure. Defaults to file_get_contents() with TLS verification.
      */
     public function __construct(?callable $httpGet = null)
     {
@@ -92,7 +92,7 @@ class SnsSignatureValidator
             : static function (string $url): string|false {
                 $ctx = stream_context_create([
                     'ssl' => [
-                        'verify_peer'      => true,
+                        'verify_peer' => true,
                         'verify_peer_name' => true,
                     ],
                 ]);
@@ -105,17 +105,17 @@ class SnsSignatureValidator
      * Validate the SHA1-RSA signature of an SNS Notification message.
      *
      * Steps:
-     *  1. Decode the raw JSON body into a payload array.
-     *  2. Validate the SigningCertURL domain against the Amazon allowlist.
-     *  3. Fetch the signing certificate via the injected HTTP GET callable.
-     *  4. Build the canonical string-to-sign from the payload fields.
-     *  5. Decode the base64 Signature field.
-     *  6. Verify using openssl_verify() with OPENSSL_ALGO_SHA1.
+     * 1. Decode the raw JSON body into a payload array.
+     * 2. Validate the SigningCertURL domain against the Amazon allowlist.
+     * 3. Fetch the signing certificate via the injected HTTP GET callable.
+     * 4. Build the canonical string-to-sign from the payload fields.
+     * 5. Decode the base64 Signature field.
+     * 6. Verify using openssl_verify() with OPENSSL_ALGO_SHA1.
      *
      * Returns false on ANY failure — the caller must not process the payload.
      *
-     * @param array<string, mixed> $headers  HTTP headers from the incoming request (reserved for future use).
-     * @param string               $rawBody  Raw JSON request body as received from AWS SNS.
+     * @param array<string, mixed> $headers HTTP headers from the incoming request (reserved for future use).
+     * @param string $rawBody Raw JSON request body as received from AWS SNS.
      * @return bool True if the signature is valid, false on any validation failure.
      */
     public function validate(array $headers, string $rawBody): bool
@@ -146,7 +146,7 @@ class SnsSignatureValidator
             return false;
         }
 
-        $messageType  = (string)($payload['Type'] ?? '');
+        $messageType = (string)($payload['Type'] ?? '');
         $stringToSign = $this->buildStringToSign($messageType, $payload);
         if ($stringToSign === null) {
             return false;
@@ -238,17 +238,17 @@ class SnsSignatureValidator
      * Fields absent from the payload are skipped (per AWS spec, Subject is optional).
      * Returns null for unknown message types (caller should reject the message).
      *
-     * @param string               $messageType SNS message Type field value.
-     * @param array<string, mixed> $payload     Decoded SNS payload.
+     * @param string $messageType SNS message Type field value.
+     * @param array<string, mixed> $payload Decoded SNS payload.
      * @return string|null The string-to-sign, or null for unknown message types.
      */
     private function buildStringToSign(string $messageType, array $payload): ?string
     {
         $fields = match ($messageType) {
-            'Notification'            => self::NOTIFICATION_SIGN_FIELDS,
+            'Notification' => self::NOTIFICATION_SIGN_FIELDS,
             'SubscriptionConfirmation',
             'UnsubscribeConfirmation' => self::SUBSCRIPTION_SIGN_FIELDS,
-            default                   => null,
+            default => null,
         };
 
         if ($fields === null) {

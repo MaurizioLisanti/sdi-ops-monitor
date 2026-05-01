@@ -17,8 +17,8 @@ use App\Service\ScenarioService;
  * preventing arbitrary data injection via the form.
  *
  * Routes:
- *   GET  /simulate     → index() — scenario selector form
- *   POST /simulate/run → run()   — execute a scenario and display results
+ * GET /simulate → index() — scenario selector form
+ * POST /simulate/run → run() — execute a scenario and display results
  */
 class ScenarioSimulatorController extends AppController
 {
@@ -56,7 +56,7 @@ class ScenarioSimulatorController extends AppController
      * definition so the results page can display the expected vs actual outcome.
      *
      * @return void CakePHP renders templates/ScenarioSimulator/run.php on success,
-     *              or templates/ScenarioSimulator/index.php on validation failure (HTTP 422).
+     * or templates/ScenarioSimulator/index.php on validation failure (HTTP 422).
      * @throws \Cake\Http\Exception\MethodNotAllowedException When the HTTP method is not POST.
      */
     public function run(): void
@@ -67,7 +67,7 @@ class ScenarioSimulatorController extends AppController
         // Treat any truthy non-empty value as dry_run=true (checkbox sends '1').
         $dryRun = (string)($this->request->getData('dry_run') ?? '') === '1';
 
-        $service   = new ScenarioService(
+        $service = new ScenarioService(
             $this->fetchTable('Metrics'),
             $this->fetchTable('Alerts'),
         );
@@ -78,7 +78,7 @@ class ScenarioSimulatorController extends AppController
             $this->response = $this->response->withStatus(422);
             $this->viewBuilder()->setTemplate('index');
             $this->set([
-                'error'     => 'Invalid or missing scenario_id. Please select a scenario from the list.',
+                'error' => 'Invalid or missing scenario_id. Please select a scenario from the list.',
                 'scenarios' => $scenarios,
             ]);
 
@@ -88,7 +88,7 @@ class ScenarioSimulatorController extends AppController
         $result = $service->run($scenarioId, $dryRun);
 
         $this->set([
-            'result'   => $result,
+            'result' => $result,
             'scenario' => $scenarios[$scenarioId],
         ]);
     }

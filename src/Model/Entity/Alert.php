@@ -17,10 +17,10 @@ use Cake\ORM\Entity;
 class Alert extends Entity
 {
     protected array $_accessible = [
-        'metric_id'       => true,
-        'severity'        => true,
-        'message'         => true,
-        'status'          => true,
+        'metric_id' => true,
+        'severity' => true,
+        'message' => true,
+        'status' => true,
         'acknowledged_at' => true,
     ];
 }

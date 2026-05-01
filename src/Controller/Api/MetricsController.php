@@ -18,16 +18,16 @@ use Throwable;
  * All routes require the `.json` extension or an equivalent Accept header.
  *
  * Routes (prefix: Api, extension: json):
- *   POST   /api/metrics.json        → add()   — ingest a new metric event
- *   GET    /api/metrics.json        → index() — list recent metrics (M1)
- *   GET    /api/metrics/{id}.json   → view()  — single metric detail (M1)
+ * POST /api/metrics.json → add() — ingest a new metric event
+ * GET /api/metrics.json → index() — list recent metrics (M1)
+ * GET /api/metrics/{id}.json → view() — single metric detail (M1)
  *
  * SNS pipeline (M1):
- *   When the X-Amz-Sns-Message-Type header is present, add() routes the request
- *   through the SNS-specific pipeline before any metric is written:
- *     SubscriptionConfirmation → confirm subscription → 200 (no metric saved)
- *     Notification + valid sig → extract metric from Message field → normal save
- *     Notification + invalid sig or bad cert URL → 400 (no metric saved)
+ * When the X-Amz-Sns-Message-Type header is present, add() routes the request
+ * through the SNS-specific pipeline before any metric is written:
+ * SubscriptionConfirmation → confirm subscription → 200 (no metric saved)
+ * Notification + valid sig → extract metric from Message field → normal save
+ * Notification + invalid sig or bad cert URL → 400 (no metric saved)
  */
 class MetricsController extends AppController
 {
@@ -56,10 +56,10 @@ class MetricsController extends AppController
      * When the header is absent the original metric ingestion behaviour is
      * unchanged: validate the payload and persist a Metric entity.
      *
-     * On success (direct):          HTTP 201 — {"id": <int>}
+     * On success (direct): HTTP 201 — {"id": <int>}
      * On success (SNS subscription): HTTP 200 — {"status": "ok"}
-     * On validation failure:         HTTP 422 — {"errors": {<field>: [<message>]}}
-     * On SNS signature failure:      HTTP 400 — {"error": "<reason>"}
+     * On validation failure: HTTP 422 — {"errors": {<field>: [<message>]}}
+     * On SNS signature failure: HTTP 400 — {"error": "<reason>"}
      *
      * @return \Cake\Http\Response
      * @throws \Cake\Http\Exception\MethodNotAllowedException When the HTTP method is not POST.
@@ -99,9 +99,9 @@ class MetricsController extends AppController
      * Handle an incoming request identified as an AWS SNS message.
      *
      * Two SNS message types are supported:
-     *   - SubscriptionConfirmation: confirm the subscription and return 200.
-     *   - Notification: validate the signature; on success extract and ingest
-     *     the metric embedded in the Message field; on failure return 400.
+     * - SubscriptionConfirmation: confirm the subscription and return 200.
+     * - Notification: validate the signature; on success extract and ingest
+     * the metric embedded in the Message field; on failure return 400.
      *
      * The raw body is read by rewinding the PSR-7 stream, which is necessary
      * because BodyParserMiddleware has already consumed it once.
@@ -131,11 +131,11 @@ class MetricsController extends AppController
 
         if ($messageType === 'SubscriptionConfirmation') {
             Log::info(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'info',
+                'timestamp' => date('c'),
+                'level' => 'info',
                 'correlation_id' => $correlationId,
-                'message'        => 'SNS SubscriptionConfirmation received.',
-                'context'        => ['topic_arn' => $payload['TopicArn'] ?? null],
+                'message' => 'SNS SubscriptionConfirmation received.',
+                'context' => ['topic_arn' => $payload['TopicArn'] ?? null],
             ], JSON_THROW_ON_ERROR));
 
             $validator->handleSubscriptionConfirmation($payload);
@@ -148,11 +148,11 @@ class MetricsController extends AppController
 
             if (!$validator->validate($headers, $rawBody)) {
                 Log::warning(json_encode([
-                    'timestamp'      => date('c'),
-                    'level'          => 'warning',
+                    'timestamp' => date('c'),
+                    'level' => 'warning',
                     'correlation_id' => $correlationId,
-                    'message'        => 'SNS Notification rejected: signature validation failed.',
-                    'context'        => ['topic_arn' => $payload['TopicArn'] ?? null],
+                    'message' => 'SNS Notification rejected: signature validation failed.',
+                    'context' => ['topic_arn' => $payload['TopicArn'] ?? null],
                 ], JSON_THROW_ON_ERROR));
 
                 return $this->jsonResponse(400, ['error' => 'Invalid SNS signature']);
@@ -168,11 +168,11 @@ class MetricsController extends AppController
             }
 
             Log::info(json_encode([
-                'timestamp'      => date('c'),
-                'level'          => 'info',
+                'timestamp' => date('c'),
+                'level' => 'info',
                 'correlation_id' => $correlationId,
-                'message'        => 'SNS Notification accepted — ingesting metric.',
-                'context'        => ['topic_arn' => $payload['TopicArn'] ?? null],
+                'message' => 'SNS Notification accepted — ingesting metric.',
+                'context' => ['topic_arn' => $payload['TopicArn'] ?? null],
             ], JSON_THROW_ON_ERROR));
 
             return $this->ingestMetric($messageData, $correlationId);
@@ -181,11 +181,11 @@ class MetricsController extends AppController
         // Unrecognised SNS message type — acknowledge and ignore (fail-open for
         // future SNS message types that do not carry metric data).
         Log::info(json_encode([
-            'timestamp'      => date('c'),
-            'level'          => 'info',
+            'timestamp' => date('c'),
+            'level' => 'info',
             'correlation_id' => $correlationId,
-            'message'        => 'SNS message type not handled — acknowledged and ignored.',
-            'context'        => ['message_type' => $messageType],
+            'message' => 'SNS message type not handled — acknowledged and ignored.',
+            'context' => ['message_type' => $messageType],
         ], JSON_THROW_ON_ERROR));
 
         return $this->jsonResponse(200, ['status' => 'ok']);
@@ -212,10 +212,10 @@ class MetricsController extends AppController
      * Shared between the normal HTTP pipeline and the SNS Notification pipeline.
      * On save success, evaluates alert thresholds via AlertsService.
      *
-     * @param array<string, mixed> $data          Associative array of metric field values.
-     * @param string               $correlationId Correlation ID for log entries (optional).
+     * @param array<string, mixed> $data Associative array of metric field values.
+     * @param string $correlationId Correlation ID for log entries (optional).
      * @return \Cake\Http\Response HTTP 201 with {"id": <int>} on success,
-     *                             HTTP 422 with {"errors": {...}} on validation failure.
+     * HTTP 422 with {"errors": {...}} on validation failure.
      */
     private function ingestMetric(array $data, string $correlationId = ''): Response
     {
@@ -224,7 +224,7 @@ class MetricsController extends AppController
         }
 
         $metricsTable = $this->fetchTable('Metrics');
-        $metric       = $metricsTable->newEntity($data);
+        $metric = $metricsTable->newEntity($data);
 
         if ($metricsTable->save($metric)) {
             // Evaluate alert thresholds on a best-effort basis.
@@ -235,11 +235,11 @@ class MetricsController extends AppController
                 $alertsService->evaluate($metric, $correlationId);
             } catch (Throwable $e) {
                 Log::error(json_encode([
-                    'timestamp'      => date('c'),
-                    'level'          => 'error',
+                    'timestamp' => date('c'),
+                    'level' => 'error',
                     'correlation_id' => $correlationId,
-                    'message'        => 'AlertsService::evaluate() failed — metric saved, alert skipped.',
-                    'context'        => [
+                    'message' => 'AlertsService::evaluate() failed — metric saved, alert skipped.',
+                    'context' => [
                         'exception' => $e->getMessage(),
                         'metric_id' => $metric->id,
                     ],
@@ -261,8 +261,8 @@ class MetricsController extends AppController
     /**
      * Build a JSON response with the given status code and body data.
      *
-     * @param int                  $status HTTP status code.
-     * @param array<string, mixed> $body   Data to JSON-encode as the response body.
+     * @param int $status HTTP status code.
+     * @param array<string, mixed> $body Data to JSON-encode as the response body.
      * @return \Cake\Http\Response
      */
     private function jsonResponse(int $status, array $body): Response

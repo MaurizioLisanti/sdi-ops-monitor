@@ -30,11 +30,11 @@ class Metric extends Entity
      * @var array<string, bool>
      */
     protected array $_accessible = [
-        'source'      => true,
-        'name'        => true,
-        'value'       => true,
-        'unit'        => true,
-        'tags'        => true,
+        'source' => true,
+        'name' => true,
+        'value' => true,
+        'unit' => true,
+        'tags' => true,
         'recorded_at' => true,
     ];
 }

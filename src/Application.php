@@ -50,7 +50,8 @@ class Application extends BaseApplication
     public function bootstrap(): void
     {
         // Call parent to load bootstrap from files.
-        parent::bootstrap(); $this->addPlugin('Migrations');
+        parent::bootstrap();
+        $this->addPlugin('Migrations');
 
         // By default, does not allow fallback classes.
         FactoryLocator::add('Table', (new TableLocator())->allowFallbackClass(false));
