@@ -37,3 +37,10 @@
 # OS
 .DS_Store
 Thumbs.db
+
+# Cartelle temporanee spurie
+cakephp-tmp/
+src/src/
+webroot/webroot/
+*.swp
+*.swo
