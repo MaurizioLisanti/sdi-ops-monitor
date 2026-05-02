@@ -71,6 +71,27 @@ return [
     ],
 
     /*
+     * Trusted proxy configuration.
+     *
+     * - ips - Comma-separated list of trusted proxy IPs/CIDR ranges (env: TRUSTED_PROXIES).
+     *   Set to the GovWay gateway IP and any AWS infrastructure addresses.
+     *   Applied via Cake\Http\ServerRequest::setTrustedProxies() in Application middleware.
+     * - headers - HTTP headers accepted from trusted proxies.
+     */
+    'TrustedProxies' => [
+        'ips' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', env('TRUSTED_PROXIES', ''))
+        ))),
+        'headers' => [
+            'X-Forwarded-For',
+            'X-Forwarded-Host',
+            'X-Forwarded-Proto',
+            'X-Correlation-ID',
+        ],
+    ],
+
+    /*
      * Security and encryption configuration
      *
      * - salt - A random string used in security hashing methods.

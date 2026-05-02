@@ -446,7 +446,7 @@
           "last_updated": "2026-05-02T12:00:00Z"
         },
         "TASK_m4_govway_mtls": {
-          "status": "BLOCKED",
+          "status": "DONE",
           "blocked_by": [
             "TASK_m4_eb_infra"
           ],
@@ -455,9 +455,9 @@
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
           "handoff": "coord/HANDOFF_m4_govway_mtls.md",
-          "smoke_test_after_merge": "PENDING",
+          "smoke_test_after_merge": "PASS",
           "created": "2026-04-12T00:00:00Z",
-          "last_updated": "2026-04-12T00:00:00Z"
+          "last_updated": "2026-05-02T18:20:00Z"
         },
         "TASK_m4_sqs_worker": {
           "status": "DONE",
@@ -534,11 +534,11 @@
       "planned": true,
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 57,
-      "tasks_done": 4,
+      "percent_done": 71,
+      "tasks_done": 5,
       "tasks_total": 7,
       "requires": "M3 DONE",
-      "next_action": "M4 IN PROGRESS \u2014 4/7 DONE (eb_infra, env_vars, rds_config, cloudwatch). Prossimi task sbloccati: TASK_m4_govway_mtls, TASK_m4_sqs_worker, TASK_m4_healthcheck_aws."
+      "next_action": "M4 IN PROGRESS \u2014 5/7 DONE (eb_infra, env_vars, rds_config, cloudwatch, govway_mtls). Prossimo task: TASK_m4_healthcheck_aws."
     }
   },
   "open_halts": [],
@@ -671,7 +671,7 @@
   "replan_history": [],
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-05-02T18:10:00Z",
+    "last_updated": "2026-05-02T18:20:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
