@@ -1,8 +1,6 @@
 # CakePHP 5 — sdi-ops-monitor
 
 /vendor/
-/config/app.php
-/config/app_local.php
 .env
 
 # CakePHP temp / cache
