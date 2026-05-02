@@ -1,8 +1,7 @@
 {
-  "_comment": "coord/STATE.json — Fonte di verità primaria sullo stato della pipeline. Aggiorna dopo ogni HANDOFF DONE. Se in conflitto con BOARD.md, questo file vince.",
+  "_comment": "coord/STATE.json \u2014 Fonte di verit\u00e0 primaria sullo stato della pipeline. Aggiorna dopo ogni HANDOFF DONE. Se in conflitto con BOARD.md, questo file vince.",
   "_version": "1.1",
   "_template": "pipeline-agentiva-v2",
-
   "project": "sdi-ops-monitor",
   "stack": "PHP 8.2 / CakePHP 5 / MySQL 8.0 / AWS",
   "complexity": "MED",
@@ -14,13 +13,11 @@
     "total": 6,
     "label": "MED"
   },
-
   "current_wave": 5,
   "total_waves": 5,
-
   "waves": {
     "wave_1": {
-      "name": "M0 — Scaffold & Core Endpoints",
+      "name": "M0 \u2014 Scaffold & Core Endpoints",
       "milestone": "M0",
       "status": "DONE",
       "entry_condition": "N/A per wave 1",
@@ -29,7 +26,11 @@
         "TASK_scaffold_m0_boot": {
           "status": "DONE",
           "blocked_by": [],
-          "blocks": ["TASK_m0_health_endpoint", "TASK_m0_metric_ingestion", "TASK_m0_dashboard"],
+          "blocks": [
+            "TASK_m0_health_endpoint",
+            "TASK_m0_metric_ingestion",
+            "TASK_m0_dashboard"
+          ],
           "risk_tier": "MED",
           "assignee": "Executor",
           "suggested_agent": "Codex",
@@ -40,8 +41,12 @@
         },
         "TASK_m0_health_endpoint": {
           "status": "DONE",
-          "blocked_by": ["TASK_scaffold_m0_boot"],
-          "blocks": ["TASK_m0_tests_smoke"],
+          "blocked_by": [
+            "TASK_scaffold_m0_boot"
+          ],
+          "blocks": [
+            "TASK_m0_tests_smoke"
+          ],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
@@ -52,8 +57,12 @@
         },
         "TASK_m0_metric_ingestion": {
           "status": "DONE",
-          "blocked_by": ["TASK_scaffold_m0_boot"],
-          "blocks": ["TASK_m0_tests_smoke"],
+          "blocked_by": [
+            "TASK_scaffold_m0_boot"
+          ],
+          "blocks": [
+            "TASK_m0_tests_smoke"
+          ],
           "risk_tier": "MED",
           "assignee": "Executor",
           "suggested_agent": "Codex",
@@ -64,8 +73,12 @@
         },
         "TASK_m0_dashboard": {
           "status": "DONE",
-          "blocked_by": ["TASK_scaffold_m0_boot"],
-          "blocks": ["TASK_m0_tests_smoke"],
+          "blocked_by": [
+            "TASK_scaffold_m0_boot"
+          ],
+          "blocks": [
+            "TASK_m0_tests_smoke"
+          ],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
@@ -76,7 +89,11 @@
         },
         "TASK_m0_tests_smoke": {
           "status": "DONE",
-          "blocked_by": ["TASK_m0_health_endpoint", "TASK_m0_metric_ingestion", "TASK_m0_dashboard"],
+          "blocked_by": [
+            "TASK_m0_health_endpoint",
+            "TASK_m0_metric_ingestion",
+            "TASK_m0_dashboard"
+          ],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
@@ -92,7 +109,7 @@
       "wave_completed": null
     },
     "wave_2": {
-      "name": "M1 — Alert Engine & AWS Integration",
+      "name": "M1 \u2014 Alert Engine & AWS Integration",
       "milestone": "M1",
       "status": "DONE",
       "entry_condition": "Wave 1 DONE",
@@ -101,7 +118,10 @@
         "TASK_m1_observability": {
           "status": "DONE",
           "blocked_by": [],
-          "blocks": ["TASK_m1_alert_engine", "TASK_m1_auth"],
+          "blocks": [
+            "TASK_m1_alert_engine",
+            "TASK_m1_auth"
+          ],
           "risk_tier": "MED",
           "assignee": "Executor",
           "suggested_agent": "Claude",
@@ -112,8 +132,13 @@
         },
         "TASK_m1_alert_engine": {
           "status": "DONE",
-          "blocked_by": ["TASK_m1_observability"],
-          "blocks": ["TASK_m1_aws_integration", "TASK_m1_tests_m1"],
+          "blocked_by": [
+            "TASK_m1_observability"
+          ],
+          "blocks": [
+            "TASK_m1_aws_integration",
+            "TASK_m1_tests_m1"
+          ],
           "risk_tier": "HIGH",
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
@@ -124,8 +149,12 @@
         },
         "TASK_m1_auth": {
           "status": "DONE",
-          "blocked_by": ["TASK_m1_observability"],
-          "blocks": ["TASK_m1_tests_m1"],
+          "blocked_by": [
+            "TASK_m1_observability"
+          ],
+          "blocks": [
+            "TASK_m1_tests_m1"
+          ],
           "risk_tier": "HIGH",
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
@@ -136,8 +165,12 @@
         },
         "TASK_m1_aws_integration": {
           "status": "DONE",
-          "blocked_by": ["TASK_m1_alert_engine"],
-          "blocks": ["TASK_m1_tests_m1"],
+          "blocked_by": [
+            "TASK_m1_alert_engine"
+          ],
+          "blocks": [
+            "TASK_m1_tests_m1"
+          ],
           "risk_tier": "HIGH",
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
@@ -148,7 +181,11 @@
         },
         "TASK_m1_tests_m1": {
           "status": "DONE",
-          "blocked_by": ["TASK_m1_alert_engine", "TASK_m1_auth", "TASK_m1_aws_integration"],
+          "blocked_by": [
+            "TASK_m1_alert_engine",
+            "TASK_m1_auth",
+            "TASK_m1_aws_integration"
+          ],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
@@ -164,7 +201,7 @@
       "wave_completed": "2026-04-06T00:02:00Z"
     },
     "wave_3": {
-      "name": "M2 — Log Consistency, SNS E2E Tests, Dashboard Severity, SQS Scheduler, Log Viewer, Scenario Simulator",
+      "name": "M2 \u2014 Log Consistency, SNS E2E Tests, Dashboard Severity, SQS Scheduler, Log Viewer, Scenario Simulator",
       "milestone": "M2",
       "status": "DONE",
       "entry_condition": "Wave 2 DONE",
@@ -173,7 +210,9 @@
         "TASK_m2_fix_log_consistency": {
           "status": "DONE",
           "blocked_by": [],
-          "blocks": ["TASK_m2_log_viewer"],
+          "blocks": [
+            "TASK_m2_log_viewer"
+          ],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
@@ -209,7 +248,9 @@
         "TASK_m2_sqs_scheduler": {
           "status": "DONE",
           "blocked_by": [],
-          "blocks": ["TASK_m2_scenario_simulator"],
+          "blocks": [
+            "TASK_m2_scenario_simulator"
+          ],
           "risk_tier": "HIGH",
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
@@ -220,8 +261,12 @@
         },
         "TASK_m2_log_viewer": {
           "status": "DONE",
-          "blocked_by": ["TASK_m2_fix_log_consistency"],
-          "blocks": ["TASK_m2_scenario_simulator"],
+          "blocked_by": [
+            "TASK_m2_fix_log_consistency"
+          ],
+          "blocks": [
+            "TASK_m2_scenario_simulator"
+          ],
           "risk_tier": "MED",
           "assignee": "Executor",
           "suggested_agent": "Codex o Qwen Coder",
@@ -232,7 +277,10 @@
         },
         "TASK_m2_scenario_simulator": {
           "status": "DONE",
-          "blocked_by": ["TASK_m2_sqs_scheduler", "TASK_m2_log_viewer"],
+          "blocked_by": [
+            "TASK_m2_sqs_scheduler",
+            "TASK_m2_log_viewer"
+          ],
           "blocks": [],
           "risk_tier": "MED",
           "assignee": "Executor",
@@ -248,7 +296,7 @@
       "wave_completed": "2026-04-10T16:20:00Z"
     },
     "wave_4": {
-      "name": "M3 — Demo Ready: AI Diagnostics, CI Pipeline, PHPCS, OBS Fixes, Runbook",
+      "name": "M3 \u2014 Demo Ready: AI Diagnostics, CI Pipeline, PHPCS, OBS Fixes, Runbook",
       "milestone": "M3",
       "status": "DONE",
       "entry_condition": "Wave 3 DONE",
@@ -257,7 +305,9 @@
         "TASK_m3_ai_diagnostics": {
           "status": "DONE",
           "blocked_by": [],
-          "blocks": ["TASK_m3_fix_wave3_obs"],
+          "blocks": [
+            "TASK_m3_fix_wave3_obs"
+          ],
           "risk_tier": "MED",
           "assignee": "Executor",
           "suggested_agent": "Codex o Qwen Coder",
@@ -269,7 +319,9 @@
         "TASK_m3_ci_pipeline": {
           "status": "DONE",
           "blocked_by": [],
-          "blocks": ["TASK_m3_phpcs"],
+          "blocks": [
+            "TASK_m3_phpcs"
+          ],
           "risk_tier": "LOW",
           "assignee": "Executor",
           "suggested_agent": "Claude",
@@ -280,7 +332,9 @@
         },
         "TASK_m3_phpcs": {
           "status": "DONE",
-          "blocked_by": ["TASK_m3_ci_pipeline"],
+          "blocked_by": [
+            "TASK_m3_ci_pipeline"
+          ],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
@@ -292,7 +346,9 @@
         },
         "TASK_m3_fix_wave3_obs": {
           "status": "DONE",
-          "blocked_by": ["TASK_m3_ai_diagnostics"],
+          "blocked_by": [
+            "TASK_m3_ai_diagnostics"
+          ],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
@@ -320,14 +376,14 @@
       "wave_completed": "2026-04-10T19:00:00Z"
     },
     "wave_5": {
-      "name": "M4 — AWS Real Deploy: EB, RDS, SQS, CloudWatch, mTLS/GovWay",
+      "name": "M4 \u2014 AWS Real Deploy: EB, RDS, SQS, CloudWatch, mTLS/GovWay",
       "milestone": "M4",
       "status": "IN_PROGRESS",
       "entry_condition": "Wave 4 DONE",
       "exit_condition": "Tutti i task DONE + eb status Health:Ok + GET /health 200 su HTTPS AWS + RDS connesso + SQS worker attivo + CloudWatch alarms configurati + docs/govway_mtls.md presente",
       "tasks": {
         "TASK_m4_eb_infra": {
-          "status": "TODO",
+          "status": "DONE",
           "blocked_by": [],
           "blocks": [
             "TASK_m4_env_vars",
@@ -344,8 +400,12 @@
         },
         "TASK_m4_env_vars": {
           "status": "BLOCKED",
-          "blocked_by": ["TASK_m4_eb_infra"],
-          "blocks": ["TASK_m4_rds_config"],
+          "blocked_by": [
+            "TASK_m4_eb_infra"
+          ],
+          "blocks": [
+            "TASK_m4_rds_config"
+          ],
           "risk_tier": "HIGH",
           "assignee": "Executor",
           "suggested_agent": "Codex o revisione umana",
@@ -356,8 +416,13 @@
         },
         "TASK_m4_rds_config": {
           "status": "BLOCKED",
-          "blocked_by": ["TASK_m4_env_vars"],
-          "blocks": ["TASK_m4_sqs_worker", "TASK_m4_healthcheck_aws"],
+          "blocked_by": [
+            "TASK_m4_env_vars"
+          ],
+          "blocks": [
+            "TASK_m4_sqs_worker",
+            "TASK_m4_healthcheck_aws"
+          ],
           "risk_tier": "MED",
           "assignee": "Executor",
           "suggested_agent": "Codex o Qwen Coder",
@@ -368,7 +433,9 @@
         },
         "TASK_m4_cloudwatch": {
           "status": "BLOCKED",
-          "blocked_by": ["TASK_m4_eb_infra"],
+          "blocked_by": [
+            "TASK_m4_eb_infra"
+          ],
           "blocks": [],
           "risk_tier": "MED",
           "assignee": "Executor",
@@ -380,7 +447,9 @@
         },
         "TASK_m4_govway_mtls": {
           "status": "BLOCKED",
-          "blocked_by": ["TASK_m4_eb_infra"],
+          "blocked_by": [
+            "TASK_m4_eb_infra"
+          ],
           "blocks": [],
           "risk_tier": "HIGH",
           "assignee": "Executor",
@@ -392,7 +461,9 @@
         },
         "TASK_m4_sqs_worker": {
           "status": "BLOCKED",
-          "blocked_by": ["TASK_m4_rds_config"],
+          "blocked_by": [
+            "TASK_m4_rds_config"
+          ],
           "blocks": [],
           "risk_tier": "HIGH",
           "assignee": "Executor",
@@ -404,7 +475,9 @@
         },
         "TASK_m4_healthcheck_aws": {
           "status": "BLOCKED",
-          "blocked_by": ["TASK_m4_rds_config"],
+          "blocked_by": [
+            "TASK_m4_rds_config"
+          ],
           "blocks": [],
           "risk_tier": "LOW",
           "assignee": "Executor",
@@ -420,14 +493,13 @@
       "wave_completed": null
     }
   },
-
   "milestone_status": {
     "M0": {
       "status": "DONE",
       "percent_done": 100,
       "tasks_done": 5,
       "tasks_total": 5,
-      "next_action": "M0 COMPLETE — Wave 1 5/5 DONE, make test PASS. Wave 2 sbloccata."
+      "next_action": "M0 COMPLETE \u2014 Wave 1 5/5 DONE, make test PASS. Wave 2 sbloccata."
     },
     "M1": {
       "unlocked": true,
@@ -436,7 +508,7 @@
       "tasks_done": 5,
       "tasks_total": 5,
       "requires": "M0 100% DONE",
-      "next_action": "M1 COMPLETE — Wave 2 5/5 DONE, make test PASS. M2 da pianificare."
+      "next_action": "M1 COMPLETE \u2014 Wave 2 5/5 DONE, make test PASS. M2 da pianificare."
     },
     "M2": {
       "planned": true,
@@ -446,7 +518,7 @@
       "tasks_done": 6,
       "tasks_total": 6,
       "requires": "M1 DONE",
-      "next_action": "M2 COMPLETE — 6/6 DONE. make test 30/30 PASS. Wave 3 completata."
+      "next_action": "M2 COMPLETE \u2014 6/6 DONE. make test 30/30 PASS. Wave 3 completata."
     },
     "M3": {
       "planned": true,
@@ -456,7 +528,7 @@
       "tasks_done": 5,
       "tasks_total": 5,
       "requires": "M2 DONE",
-      "next_action": "M3 COMPLETE — 5/5 DONE. make test 35/35 PASS. CI green. PHPCS baseline (265 errors — continue-on-error:true). Wave 5 / M4 sbloccata."
+      "next_action": "M3 COMPLETE \u2014 5/5 DONE. make test 35/35 PASS. CI green. PHPCS baseline (265 errors \u2014 continue-on-error:true). Wave 5 / M4 sbloccata."
     },
     "M4": {
       "planned": true,
@@ -466,51 +538,140 @@
       "tasks_done": 0,
       "tasks_total": 7,
       "requires": "M3 DONE",
-      "next_action": "M4 IN PROGRESS — Avviare TASK_m4_eb_infra (unico task sbloccato). Dopo DONE: sbloccare TASK_m4_env_vars + TASK_m4_cloudwatch + TASK_m4_govway_mtls in parallelo."
+      "next_action": "M4 IN PROGRESS \u2014 Avviare TASK_m4_eb_infra (unico task sbloccato). Dopo DONE: sbloccare TASK_m4_env_vars + TASK_m4_cloudwatch + TASK_m4_govway_mtls in parallelo."
     }
   },
-
   "open_halts": [],
-
   "assumptions": [
-    {"id": "A1", "text": "MySQL 8.0 disponibile e raggiungibile all'avvio"},
-    {"id": "A2", "text": "AWS credentials iniettate via env vars — non hardcoded"},
-    {"id": "A3", "text": "In M0 non c'è autenticazione — accesso libero ad API e dashboard"},
-    {"id": "A4", "text": "config/app_local.php copiato da .example e configurato dall'operatore prima dell'esecuzione"},
-    {"id": "A5", "text": "CakePHP 5 non richiede config/bootstrap.php separato — quello esistente è sufficiente"},
-    {"id": "A6", "text": "Campo tags in tabella metrics è tipo JSON o TEXT con serializzazione — verificare migration"},
-    {"id": "A7", "text": "Se alerts è vuota, dashboard mostra overallStatus green senza errori"},
-    {"id": "A8", "text": "MetricsFixture necessaria solo se i test verificano persistenza via SELECT"},
-    {"id": "A9", "text": "OPENROUTER_API_KEY assente → fallback deterministico attivo — nessun errore esposto; demo funziona offline"},
-    {"id": "A10", "text": "GitHub Actions abilitato sul repository — workflow ci.yml non richiede configurazione aggiuntiva"},
-    {"id": "A_M4_1", "text": "Account AWS free tier disponibile con permessi EB, EC2, S3, IAM, RDS, SQS, CloudWatch"},
-    {"id": "A_M4_2", "text": "AWS credentials configurate in ~/.aws/credentials lato operatore (non nel repo)"},
-    {"id": "A_M4_3", "text": "EB CLI installato localmente (pip install awsebcli)"},
-    {"id": "A_M4_4", "text": "Platform target: PHP 8.2 running on 64bit Amazon Linux 2023 (no Docker — deploy diretto)"},
-    {"id": "A_M4_5", "text": "Instance type: t3.micro (free tier eligible) — single-instance environment"},
-    {"id": "A_M4_6", "text": "Le variabili sensibili vengono impostate via EB console (Environment properties) — non via .ebextensions"},
-    {"id": "A_M4_7", "text": "CakePHP 5 legge DATABASE_URL via ConnectionManager — config/app.php deve essere aggiornato"},
-    {"id": "A_M4_8", "text": "RDS istanza: db.t3.micro, MySQL 8.0, storage 20GB gp2 (free tier limits)"},
-    {"id": "A_M4_9", "text": "La VPC default è sufficiente per collegare EB e RDS; no VPC custom richiesta"},
-    {"id": "A_M4_10", "text": "CakePHP 5 ConnectionManager supporta DATABASE_URL — da verificare; fallback a singole env vars se necessario"},
-    {"id": "A_M4_11", "text": "I log CakePHP sono scritti in logs/error.log e logs/debug.log — path standard CakePHP 5"},
-    {"id": "A_M4_12", "text": "CloudWatch agent disponibile su Amazon Linux 2023 (preinstallato su EB PHP platform)"},
-    {"id": "A_M4_13", "text": "Costo CloudWatch free tier: 5GB log ingest/mese, 10 allarmi — sufficiente per M4"},
-    {"id": "A_M4_14", "text": "Free tier EB single-instance → no ALB; SSL termination su nginx/apache dell'istanza EC2"},
-    {"id": "A_M4_15", "text": "Per M4: self-signed cert accettabile; produzione richiederà cert firmato da CA GovWay-compatible"},
-    {"id": "A_M4_16", "text": "GovWay mTLS client cert è post-M4; M4 configura solo SSL server-side e headers proxy"},
-    {"id": "A_M4_17", "text": "Coda SQS già creata dall'operatore prima del deploy (standard, non FIFO)"},
-    {"id": "A_M4_18", "text": "IAM Role dell'istanza EC2 EB ha permessi sqs:ReceiveMessage, sqs:DeleteMessage sulla coda configurata"},
-    {"id": "A_M4_19", "text": "Cron via .ebextensions ogni minuto è sufficiente per M4; EB worker tier è fuori scope"},
-    {"id": "A_M4_20", "text": "HealthController risponde 503 quando DB non disponibile — comportamento da M0"},
-    {"id": "A_M4_21", "text": "Su EB single-instance senza ALB, l'health check EB agent usa il path configurato in .ebextensions"}
+    {
+      "id": "A1",
+      "text": "MySQL 8.0 disponibile e raggiungibile all'avvio"
+    },
+    {
+      "id": "A2",
+      "text": "AWS credentials iniettate via env vars \u2014 non hardcoded"
+    },
+    {
+      "id": "A3",
+      "text": "In M0 non c'\u00e8 autenticazione \u2014 accesso libero ad API e dashboard"
+    },
+    {
+      "id": "A4",
+      "text": "config/app_local.php copiato da .example e configurato dall'operatore prima dell'esecuzione"
+    },
+    {
+      "id": "A5",
+      "text": "CakePHP 5 non richiede config/bootstrap.php separato \u2014 quello esistente \u00e8 sufficiente"
+    },
+    {
+      "id": "A6",
+      "text": "Campo tags in tabella metrics \u00e8 tipo JSON o TEXT con serializzazione \u2014 verificare migration"
+    },
+    {
+      "id": "A7",
+      "text": "Se alerts \u00e8 vuota, dashboard mostra overallStatus green senza errori"
+    },
+    {
+      "id": "A8",
+      "text": "MetricsFixture necessaria solo se i test verificano persistenza via SELECT"
+    },
+    {
+      "id": "A9",
+      "text": "OPENROUTER_API_KEY assente \u2192 fallback deterministico attivo \u2014 nessun errore esposto; demo funziona offline"
+    },
+    {
+      "id": "A10",
+      "text": "GitHub Actions abilitato sul repository \u2014 workflow ci.yml non richiede configurazione aggiuntiva"
+    },
+    {
+      "id": "A_M4_1",
+      "text": "Account AWS free tier disponibile con permessi EB, EC2, S3, IAM, RDS, SQS, CloudWatch"
+    },
+    {
+      "id": "A_M4_2",
+      "text": "AWS credentials configurate in ~/.aws/credentials lato operatore (non nel repo)"
+    },
+    {
+      "id": "A_M4_3",
+      "text": "EB CLI installato localmente (pip install awsebcli)"
+    },
+    {
+      "id": "A_M4_4",
+      "text": "Platform target: PHP 8.2 running on 64bit Amazon Linux 2023 (no Docker \u2014 deploy diretto)"
+    },
+    {
+      "id": "A_M4_5",
+      "text": "Instance type: t3.micro (free tier eligible) \u2014 single-instance environment"
+    },
+    {
+      "id": "A_M4_6",
+      "text": "Le variabili sensibili vengono impostate via EB console (Environment properties) \u2014 non via .ebextensions"
+    },
+    {
+      "id": "A_M4_7",
+      "text": "CakePHP 5 legge DATABASE_URL via ConnectionManager \u2014 config/app.php deve essere aggiornato"
+    },
+    {
+      "id": "A_M4_8",
+      "text": "RDS istanza: db.t3.micro, MySQL 8.0, storage 20GB gp2 (free tier limits)"
+    },
+    {
+      "id": "A_M4_9",
+      "text": "La VPC default \u00e8 sufficiente per collegare EB e RDS; no VPC custom richiesta"
+    },
+    {
+      "id": "A_M4_10",
+      "text": "CakePHP 5 ConnectionManager supporta DATABASE_URL \u2014 da verificare; fallback a singole env vars se necessario"
+    },
+    {
+      "id": "A_M4_11",
+      "text": "I log CakePHP sono scritti in logs/error.log e logs/debug.log \u2014 path standard CakePHP 5"
+    },
+    {
+      "id": "A_M4_12",
+      "text": "CloudWatch agent disponibile su Amazon Linux 2023 (preinstallato su EB PHP platform)"
+    },
+    {
+      "id": "A_M4_13",
+      "text": "Costo CloudWatch free tier: 5GB log ingest/mese, 10 allarmi \u2014 sufficiente per M4"
+    },
+    {
+      "id": "A_M4_14",
+      "text": "Free tier EB single-instance \u2192 no ALB; SSL termination su nginx/apache dell'istanza EC2"
+    },
+    {
+      "id": "A_M4_15",
+      "text": "Per M4: self-signed cert accettabile; produzione richieder\u00e0 cert firmato da CA GovWay-compatible"
+    },
+    {
+      "id": "A_M4_16",
+      "text": "GovWay mTLS client cert \u00e8 post-M4; M4 configura solo SSL server-side e headers proxy"
+    },
+    {
+      "id": "A_M4_17",
+      "text": "Coda SQS gi\u00e0 creata dall'operatore prima del deploy (standard, non FIFO)"
+    },
+    {
+      "id": "A_M4_18",
+      "text": "IAM Role dell'istanza EC2 EB ha permessi sqs:ReceiveMessage, sqs:DeleteMessage sulla coda configurata"
+    },
+    {
+      "id": "A_M4_19",
+      "text": "Cron via .ebextensions ogni minuto \u00e8 sufficiente per M4; EB worker tier \u00e8 fuori scope"
+    },
+    {
+      "id": "A_M4_20",
+      "text": "HealthController risponde 503 quando DB non disponibile \u2014 comportamento da M0"
+    },
+    {
+      "id": "A_M4_21",
+      "text": "Su EB single-instance senza ALB, l'health check EB agent usa il path configurato in .ebextensions"
+    }
   ],
-
   "replan_history": [],
-
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-04-12T00:00:00Z",
+    "last_updated": "2026-05-02T09:40:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
