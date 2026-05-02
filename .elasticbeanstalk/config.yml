@@ -1,6 +1,6 @@
 branch-defaults:
   main:
-    environment: null
+    environment: sdi-ops-monitor-prod
 global:
   application_name: sdi-ops-monitor
   branch: null

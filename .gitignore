@@ -48,3 +48,8 @@ webroot/webroot/
 # Elastic Beanstalk (keep config.yml tracked)
 .elasticbeanstalk/*
 !.elasticbeanstalk/config.yml
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
