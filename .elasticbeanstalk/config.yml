@@ -1,15 +1,17 @@
 branch-defaults:
   main:
-    environment: sdi-ops-monitor-prod
-
-environment-defaults:
-  sdi-ops-monitor-prod:
-    branch: main
-    repository: default
-
+    environment: null
 global:
   application_name: sdi-ops-monitor
+  branch: null
   default_ec2_keyname: null
   default_platform: PHP 8.2 running on 64bit Amazon Linux 2023
   default_region: eu-west-1
-  sc: git
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: null
+  repository: null
+  sc: null
+  workspace_type: Application
