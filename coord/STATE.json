@@ -399,7 +399,7 @@
           "last_updated": "2026-04-12T00:00:00Z"
         },
         "TASK_m4_env_vars": {
-          "status": "BLOCKED",
+          "status": "DONE",
           "blocked_by": [
             "TASK_m4_eb_infra"
           ],
@@ -415,7 +415,7 @@
           "last_updated": "2026-04-12T00:00:00Z"
         },
         "TASK_m4_rds_config": {
-          "status": "BLOCKED",
+          "status": "DONE",
           "blocked_by": [
             "TASK_m4_env_vars"
           ],
@@ -432,7 +432,7 @@
           "last_updated": "2026-04-12T00:00:00Z"
         },
         "TASK_m4_cloudwatch": {
-          "status": "BLOCKED",
+          "status": "DONE",
           "blocked_by": [
             "TASK_m4_eb_infra"
           ],
@@ -443,7 +443,7 @@
           "handoff": "coord/HANDOFF_m4_cloudwatch.md",
           "smoke_test_after_merge": "PENDING",
           "created": "2026-04-12T00:00:00Z",
-          "last_updated": "2026-04-12T00:00:00Z"
+          "last_updated": "2026-05-02T12:00:00Z"
         },
         "TASK_m4_govway_mtls": {
           "status": "BLOCKED",
@@ -534,11 +534,11 @@
       "planned": true,
       "unlocked": true,
       "status": "IN_PROGRESS",
-      "percent_done": 0,
-      "tasks_done": 0,
+      "percent_done": 57,
+      "tasks_done": 4,
       "tasks_total": 7,
       "requires": "M3 DONE",
-      "next_action": "M4 IN PROGRESS \u2014 Avviare TASK_m4_eb_infra (unico task sbloccato). Dopo DONE: sbloccare TASK_m4_env_vars + TASK_m4_cloudwatch + TASK_m4_govway_mtls in parallelo."
+      "next_action": "M4 IN PROGRESS \u2014 4/7 DONE (eb_infra, env_vars, rds_config, cloudwatch). Prossimi task sbloccati: TASK_m4_govway_mtls, TASK_m4_sqs_worker, TASK_m4_healthcheck_aws."
     }
   },
   "open_halts": [],
@@ -671,7 +671,7 @@
   "replan_history": [],
   "meta": {
     "created": "2026-04-02T00:00:00Z",
-    "last_updated": "2026-05-02T09:40:00Z",
+    "last_updated": "2026-05-02T12:00:00Z",
     "agent_last_run": "claude-sonnet-4-6",
     "prompt_used": "PROMPT_03_planner_agent_v3"
   }
