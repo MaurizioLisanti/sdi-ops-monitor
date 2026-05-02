@@ -44,3 +44,7 @@ src/src/
 webroot/webroot/
 *.swp
 *.swo
+
+# Elastic Beanstalk (keep config.yml tracked)
+.elasticbeanstalk/*
+!.elasticbeanstalk/config.yml
