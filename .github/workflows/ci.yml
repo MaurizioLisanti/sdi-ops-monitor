@@ -116,8 +116,6 @@ jobs:
 
       # ── Code style ────────────────────────────────────────────────────────────
       # Runs PHPCS with the CakePHP standard defined in phpcs.xml.
-      # continue-on-error: true — first-run baseline; violations are reported as
       # warnings only and do not block merge until the codebase is fully clean.
       - name: Run PHPCS code style check
         run: make phpcs
-        continue-on-error: true
