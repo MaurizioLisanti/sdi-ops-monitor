@@ -1,6 +1,6 @@
 # sdi-ops-monitor
 
-[![CI](https://github.com/MLisanti-Dev/sdi-ops-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/MLisanti-Dev/sdi-ops-monitor/actions/workflows/ci.yml)
+[![CI](https://github.com/MaurizioLisanti/sdi-ops-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/MaurizioLisanti/sdi-ops-monitor/actions/workflows/ci.yml)
 [![PHP 8.2](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)](https://www.php.net/)
 [![CakePHP 5](https://img.shields.io/badge/CakePHP-5-D33C43?logo=cakephp&logoColor=white)](https://cakephp.org/)
 [![AWS Elastic Beanstalk](https://img.shields.io/badge/AWS-Elastic%20Beanstalk-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/elasticbeanstalk/)
@@ -76,7 +76,7 @@ The application provides a traffic-light dashboard (green / yellow / red), autom
 
 ```bash
 # 1. Clone
-git clone https://github.com/MLisanti-Dev/sdi-ops-monitor.git
+git clone https://github.com/MaurizioLisanti/sdi-ops-monitor.git
 cd sdi-ops-monitor
 
 # 2. Install PHP dependencies
