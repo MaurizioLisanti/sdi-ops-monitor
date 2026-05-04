@@ -42,6 +42,8 @@ class AiDiagnosticsControllerTest extends TestCase
         putenv('APP_AUTH_PASSWORD=' . self::TEST_PASSWORD);
         $_ENV['APP_AUTH_USER']     = self::TEST_USER;
         $_ENV['APP_AUTH_PASSWORD'] = self::TEST_PASSWORD;
+        $_SERVER['APP_AUTH_USER']     = self::TEST_USER;
+        $_SERVER['APP_AUTH_PASSWORD'] = self::TEST_PASSWORD;
 
         // No API key — deterministic fallback is active; no network calls in CI.
         putenv('OPENROUTER_API_KEY');

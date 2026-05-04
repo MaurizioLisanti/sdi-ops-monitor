@@ -64,6 +64,8 @@ class LogViewerControllerTest extends TestCase
         putenv('APP_AUTH_PASSWORD=' . self::TEST_PASSWORD);
         $_ENV['APP_AUTH_USER']     = self::TEST_USER;
         $_ENV['APP_AUTH_PASSWORD'] = self::TEST_PASSWORD;
+        $_SERVER['APP_AUTH_USER']     = self::TEST_USER;
+        $_SERVER['APP_AUTH_PASSWORD'] = self::TEST_PASSWORD;
 
         // Mirror the path constructed by LogViewerController.
         $this->logFilePath       = ROOT . DS . 'logs' . DS . 'app.log';
@@ -80,6 +82,7 @@ class LogViewerControllerTest extends TestCase
         putenv('APP_AUTH_USER');
         putenv('APP_AUTH_PASSWORD');
         unset($_ENV['APP_AUTH_USER'], $_ENV['APP_AUTH_PASSWORD']);
+        unset($_SERVER['APP_AUTH_USER'], $_SERVER['APP_AUTH_PASSWORD']);
 
         // Restore the real log file if it was hidden during the test.
         if ($this->logFileHidden && file_exists($this->logFileBackupPath)) {

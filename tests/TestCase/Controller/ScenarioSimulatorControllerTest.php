@@ -49,6 +49,8 @@ class ScenarioSimulatorControllerTest extends TestCase
         putenv('APP_AUTH_PASSWORD=' . self::TEST_PASSWORD);
         $_ENV['APP_AUTH_USER']     = self::TEST_USER;
         $_ENV['APP_AUTH_PASSWORD'] = self::TEST_PASSWORD;
+        $_SERVER['APP_AUTH_USER']     = self::TEST_USER;
+        $_SERVER['APP_AUTH_PASSWORD'] = self::TEST_PASSWORD;
     }
 
     /**
@@ -61,6 +63,7 @@ class ScenarioSimulatorControllerTest extends TestCase
         putenv('APP_AUTH_USER');
         putenv('APP_AUTH_PASSWORD');
         unset($_ENV['APP_AUTH_USER'], $_ENV['APP_AUTH_PASSWORD']);
+        unset($_SERVER['APP_AUTH_USER'], $_SERVER['APP_AUTH_PASSWORD']);
 
         parent::tearDown();
     }
