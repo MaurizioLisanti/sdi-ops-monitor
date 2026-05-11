@@ -5,7 +5,20 @@
 [![CakePHP 5](https://img.shields.io/badge/CakePHP-5-D33C43?logo=cakephp&logoColor=white)](https://cakephp.org/)
 [![AWS Elastic Beanstalk](https://img.shields.io/badge/AWS-Elastic%20Beanstalk-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/elasticbeanstalk/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
+## The problem
+SDI flow failures surface only when the client calls.
+By then the invoice is blocked, the deadline is missed
+and the fix is urgent. There is no visibility
+until something breaks.
+## The solution
+A real-time traffic-light dashboard that monitors
+SDI/FatturaPA flows continuously — green, yellow or red
+before the client calls. AI-assisted diagnostics
+with deterministic fallback when no API key is available.
+## Who is it for
+Technical teams managing SDI/FatturaPA flows in production
+who need operational visibility before failures
+become client emergencies.
 Operational monitor for **SDI / FatturaPA** invoice flows built on CakePHP 5 and deployed on AWS Elastic Beanstalk.  
 The application provides a traffic-light dashboard (green / yellow / red), automatic alert generation, AI-assisted diagnostics with deterministic fallback, and an asynchronous SQS worker for decoupled metric ingestion.
 
@@ -110,7 +123,12 @@ Required environment variables (or set them in `config/app_local.php`):
 | `OPENROUTER_API_KEY` | *(optional)* enables AI diagnostics |
 
 ---
-
+## What it demonstrates
+- Production-grade PHP 8.2 / CakePHP 5 on AWS Elastic Beanstalk
+- Async architecture with SQS worker decoupled from web tier
+- AI diagnostics with deterministic fallback — works without API key
+- mTLS integration with GovWay toward institutional SDI endpoints
+- 35 tests / 106 assertions — PHPUnit + CakePHP standard
 ## Deploy to AWS
 
 > Full guide: [`docs/aws_deploy.md`](docs/aws_deploy.md)
@@ -192,7 +210,11 @@ sdi-ops-monitor/
 | `009` | Duplicate invoice (already received) | `ScenarioService::run('009')` |
 
 ---
-
+## Related projects
+- **[fatturapa-mcp-server](https://github.com/MaurizioLisanti/fatturapa-mcp-server)** —
+  MCP server that gives Claude five tools for FatturaPA/SDI.
+  Use together for end-to-end AI visibility
+  into Italian e-invoicing operations.
 ## License
 
 [MIT](LICENSE)
