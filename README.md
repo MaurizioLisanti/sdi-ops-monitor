@@ -19,8 +19,7 @@ with deterministic fallback when no API key is available.
 Technical teams managing SDI/FatturaPA flows in production
 who need operational visibility before failures
 become client emergencies.
-Operational monitor for **SDI / FatturaPA** invoice flows built on CakePHP 5 and deployed on AWS Elastic Beanstalk.  
-The application provides a traffic-light dashboard (green / yellow / red), automatic alert generation, AI-assisted diagnostics with deterministic fallback, and an asynchronous SQS worker for decoupled metric ingestion.
+
 
 ---
 
