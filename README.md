@@ -128,6 +128,11 @@ Required environment variables (or set them in `config/app_local.php`):
 - AI diagnostics with deterministic fallback — works without API key
 - mTLS integration with GovWay toward institutional SDI endpoints
 - 35 tests / 106 assertions — PHPUnit + CakePHP standard
+  ## Production status
+Running on real SDI/FatturaPA production systems.
+Tested with real SDI error codes in production environments.
+Part of a broader ecosystem:
+fatturapa-mcp-server → sdi-ops-monitor
 ## Deploy to AWS
 
 > Full guide: [`docs/aws_deploy.md`](docs/aws_deploy.md)
