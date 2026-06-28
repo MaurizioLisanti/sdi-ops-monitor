@@ -98,12 +98,15 @@ class AiDiagnosticsService
      */
     private function fetchRecentMetrics(): array
     {
-        return $this->metricsTable
+        /** @var array<\App\Model\Entity\Metric> $metrics */
+        $metrics = $this->metricsTable
             ->find()
             ->orderByDesc('created')
             ->limit(self::MAX_METRICS)
             ->all()
             ->toArray();
+
+        return $metrics;
     }
 
     /**
@@ -113,10 +116,13 @@ class AiDiagnosticsService
      */
     private function fetchOpenAlerts(): array
     {
-        return $this->alertsTable
+        /** @var array<\App\Model\Entity\Alert> $alerts */
+        $alerts = $this->alertsTable
             ->find('open')
             ->all()
             ->toArray();
+
+        return $alerts;
     }
 
     /**

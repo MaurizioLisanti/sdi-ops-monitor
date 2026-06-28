@@ -18,6 +18,16 @@ use Cake\ORM\Entity;
  *   - recorded_at (datetime) — when the metric was recorded at the source; cast to DateTimeImmutable
  *   - created     (datetime) — set automatically by TimestampBehavior
  *   - modified    (datetime) — set automatically by TimestampBehavior
+ *
+ * @property int $id
+ * @property string $source
+ * @property string $name
+ * @property string $value
+ * @property string|null $unit
+ * @property string|null $tags
+ * @property \Cake\I18n\DateTime $recorded_at
+ * @property \Cake\I18n\DateTime $created
+ * @property \Cake\I18n\DateTime $modified
  */
 class Metric extends Entity
 {
