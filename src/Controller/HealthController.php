@@ -33,6 +33,7 @@ class HealthController extends AppController
         $this->request->allowMethod('get');
 
         try {
+            /** @var \Cake\Database\Connection $connection */
             $connection = ConnectionManager::get('default');
             // Lightweight ping: executes a trivial query to confirm DB reachability.
             $connection->execute('SELECT 1');
