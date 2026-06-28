@@ -114,6 +114,15 @@ jobs:
       - name: Run test suite
         run: make test
 
+      # ── Static analysis ───────────────────────────────────────────────────────
+      # PHPStan (level 5, CakePHP extension) catches type errors and undefined
+      # symbols without executing code — e.g. the missing Throwable import that
+      # previously broke the AI fallback. The codebase is currently clean (0
+      # errors); continue-on-error is intentionally NOT set, so any new error
+      # must break CI and block the merge.
+      - name: Run PHPStan static analysis
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
+
       # ── Code style ────────────────────────────────────────────────────────────
       # Runs PHPCS with the CakePHP standard defined in phpcs.xml.
       # warnings only and do not block merge until the codebase is fully clean.
