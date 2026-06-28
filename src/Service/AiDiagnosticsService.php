@@ -7,6 +7,7 @@ use App\Model\Table\AlertsTable;
 use App\Model\Table\MetricsTable;
 use Cake\Http\Client;
 use Cake\Log\Log;
+use Throwable;
 
 class AiDiagnosticsService
 {
