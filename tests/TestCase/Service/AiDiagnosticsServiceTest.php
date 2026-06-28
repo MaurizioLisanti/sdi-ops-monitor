@@ -9,6 +9,7 @@ use App\Service\AiDiagnosticsService;
 use Cake\Http\Client;
 use Cake\Http\Client\Response;
 use Cake\TestSuite\TestCase;
+use RuntimeException;
 
 /**
  * AiDiagnosticsServiceTest — unit and integration tests for AiDiagnosticsService::diagnose().
@@ -183,5 +184,55 @@ class AiDiagnosticsServiceTest extends TestCase
             'Diagnosis must contain the text from the mock response.',
         );
         $this->assertSame('test-corr-ai-3', $result->correlationId);
+    }
+
+    /**
+     * Verify that the deterministic fallback activates when the HTTP client
+     * throws — i.e. the exact failure modes the fallback exists for
+     * (timeout, DNS failure, connection refused).
+     *
+     * With a valid API key present, the service enters the AI branch and calls
+     * Client::post(). When that call throws any Throwable, the service MUST
+     * catch it and degrade to source='fallback' rather than letting the
+     * exception propagate and 500 the request.
+     *
+     * Regression guard: this test fails (errors) when the `use Throwable;`
+     * import is missing from AiDiagnosticsService, because the catch clause
+     * then resolves to the non-existent App\Service\Throwable and never matches.
+     *
+     * @return void
+     */
+    public function testFallbackActivatesWhenHttpClientThrows(): void
+    {
+        // API key present → the service enters the AI branch and calls post().
+        putenv('OPENROUTER_API_KEY=test-mock-key');
+        $_ENV['OPENROUTER_API_KEY'] = 'test-mock-key';
+
+        // Simulate a network failure: post() throws a Throwable.
+        // A plain RuntimeException is sufficient — the production catch is the
+        // generic `catch (Throwable $e)`, so any Throwable must be handled.
+        $mockClient = $this->getMockBuilder(Client::class)
+            ->onlyMethods(['post'])
+            ->getMock();
+        $mockClient
+            ->expects($this->once())
+            ->method('post')
+            ->willThrowException(new RuntimeException('Simulated network failure'));
+
+        $service = new AiDiagnosticsService(
+            $this->metricsTable,
+            $this->alertsTable,
+            $mockClient,
+        );
+        $result = $service->diagnose('test-corr-throw-4');
+
+        $this->assertSame(
+            'fallback',
+            $result->source,
+            'A Throwable from the HTTP client must degrade to the deterministic fallback, not propagate.',
+        );
+        $this->assertSame('deterministic-fallback', $result->model);
+        $this->assertNotEmpty($result->diagnosis, 'Fallback must always produce a non-empty diagnosis.');
+        $this->assertSame('test-corr-throw-4', $result->correlationId);
     }
 }
