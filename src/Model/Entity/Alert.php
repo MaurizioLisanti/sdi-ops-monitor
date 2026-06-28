@@ -19,7 +19,6 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\DateTime|null $acknowledged_at
  * @property \Cake\I18n\DateTime $created
  * @property \Cake\I18n\DateTime $modified
- *
  * @skeleton M0
  * TODO (Planner): implement status transitions (open → ack → resolved).
  */
