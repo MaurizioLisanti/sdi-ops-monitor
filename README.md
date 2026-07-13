@@ -129,10 +129,15 @@ Required environment variables (or set them in `config/app_local.php`):
 - mTLS integration with GovWay toward institutional SDI endpoints
 - 35 tests / 106 assertions — PHPUnit + CakePHP standard
   ## Production status
-Running on real SDI/FatturaPA production systems.
-Tested with real SDI error codes in production environments.
-Part of a broader ecosystem:
-fatturapa-mcp-server → sdi-ops-monitor
+Production-grade architecture deployed on AWS Elastic Beanstalk:
+SQS async workers, RDS MySQL, CloudWatch observability, CI on every push.
+
+SDI/FatturaPA integration is exercised through a scenario simulator
+reproducing real error codes (003 / 004 / 009) — no real invoice data
+is transmitted or stored.
+
+Part of a broader ecosystem: fatturapa-mcp-server → sdi-ops-monitor.
+
 ## Deploy to AWS
 
 > Full guide: [`docs/aws_deploy.md`](docs/aws_deploy.md)
