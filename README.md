@@ -192,7 +192,7 @@ SSL termination, SQS polling and CloudWatch agent are configured via `.ebextensi
 ## Tests
 
 ```bash
-# Unit + integration test suite (35 tests, 106 assertions)
+# Unit + integration test suite 
 vendor/bin/phpunit
 
 # Code-style check (CakePHP standard)
