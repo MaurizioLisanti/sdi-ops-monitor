@@ -249,10 +249,16 @@ sdi-ops-monitor/
 
 ---
 ## Related projects
+
 - **[fatturapa-mcp-server](https://github.com/MaurizioLisanti/fatturapa-mcp-server)** —
-  MCP server that gives Claude five tools for FatturaPA/SDI.
-  Use together for end-to-end AI visibility
-  into Italian e-invoicing operations.
+  MCP server exposing FatturaPA/SDI tooling to any AI agent: XML validation,
+  invoice data extraction, SDI error-code lookup, VAT number verification.
+  Use together for end-to-end AI visibility into Italian e-invoicing operations.
+
+- **[agentic-dev-pipeline](https://github.com/MaurizioLisanti/agentic-dev-pipeline)** —
+  The governed multi-agent development pipeline this project was built with:
+  risk-based routing, hard quality gates, auditable handoffs.
+  
 ## License
 
 [MIT](LICENSE)
