@@ -127,7 +127,8 @@ Required environment variables (or set them in `config/app_local.php`):
 - Async architecture with SQS worker decoupled from web tier
 - AI diagnostics with deterministic fallback — works without API key
 - mTLS integration with GovWay toward institutional SDI endpoints
-- 35 tests / 106 assertions — PHPUnit + CakePHP standard
+- PHPUnit test suite + CakePHP coding standard, both enforced in CI
+    
   ## Production status
 Production-grade architecture deployed on AWS Elastic Beanstalk:
 SQS async workers, RDS MySQL, CloudWatch observability, CI on every push.
