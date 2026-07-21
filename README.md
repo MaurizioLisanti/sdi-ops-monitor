@@ -137,6 +137,35 @@ reproducing real error codes (003 / 004 / 009) — no real invoice data
 is transmitted or stored.
 
 Part of a broader ecosystem: fatturapa-mcp-server → sdi-ops-monitor.
+---
+## How this was built
+
+This project was not prompted into existence in one shot. It was built with a
+governed multi-agent pipeline — planner, executor and reviewer as separate
+bounded roles, each with declared authority, allowed paths and stop conditions.
+No task reached `main` without passing static analysis, the test suite and a
+review gate.
+
+| Gate | Enforced by | Blocking |
+|---|---|---|
+| Static analysis | PHPStan level 5 | yes |
+| Coding standard | PHPCS (CakePHP ruleset) | yes |
+| Test suite | PHPUnit | yes |
+| Review | Reviewer agent + human sign-off | yes |
+
+Every task produced a structured handoff: files changed with a reason per file,
+commands run with their PASS/FAIL output, assumptions stated and verified,
+residual risks declared, and a correlation ID linking task, logs and review.
+
+The methodology started in this repository and was later extracted into its own
+reusable project — which is what the `Delete AGENTS.md` and `Delete coord/`
+commits in this history are: an extraction, not a cleanup. See
+**[agentic-dev-pipeline](https://github.com/MaurizioLisanti/agentic-dev-pipeline)**
+for the full workflow, the seven stage prompts and the gate definitions.
+
+Repository conventions and the Definition of Done live in
+[`AGENTS.md`](AGENTS.md).
+
 
 ## Deploy to AWS
 
