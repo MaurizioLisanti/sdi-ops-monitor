@@ -137,6 +137,7 @@ reproducing real error codes (003 / 004 / 009) — no real invoice data
 is transmitted or stored.
 
 Part of a broader ecosystem: fatturapa-mcp-server → sdi-ops-monitor.
+
 ---
 ## How this was built
 
