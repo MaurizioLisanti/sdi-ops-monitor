@@ -2,6 +2,7 @@
     "name": "sdi/sdi-ops-monitor",
     "description": "SDI Ops Monitor — CakePHP 5 operational monitoring platform",
     "type": "project",
+    "license": "MIT",
     "require": {
         "php": ">=8.2",
         "cakephp/cakephp": "^5.0",
