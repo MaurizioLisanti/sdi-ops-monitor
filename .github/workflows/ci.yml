@@ -84,14 +84,15 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       # ── Application config ────────────────────────────────────────────────────
-      # config/app.php is gitignored; copy from the committed example so
-      # CakePHP bootstrap can load its base configuration.
+      # config/app.php is committed (it contains no secrets — every value is
+      # resolved via env()). This step is a safety net for forks or branches
+      # where the file is absent; it is a no-op on main.
       - name: Prepare base application config
         run: |
           [ -f config/app.php ] || cp config/app.php.example config/app.php
 
-      # config/app_local.php is gitignored; copy from the committed example so
-      # CakePHP can read the DB_ and APP_ env vars injected above.
+      # Overwrite config/app_local.php with the example so CI always runs against
+      # a known-good, env-driven local config regardless of branch state.
       - name: Prepare local application config
         run: cp config/app_local.php.example config/app_local.php
 
@@ -125,6 +126,7 @@ jobs:
 
       # ── Code style ────────────────────────────────────────────────────────────
       # Runs PHPCS with the CakePHP standard defined in phpcs.xml.
-      # warnings only and do not block merge until the codebase is fully clean.
+      # continue-on-error is intentionally NOT set: the codebase is currently
+      # style-clean, so any new violation must break CI and block the merge.
       - name: Run PHPCS code style check
         run: make phpcs
