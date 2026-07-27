@@ -26,10 +26,19 @@ use Throwable;
  * scenario-4: FatturaPA Batch Failure Spike (Naples) → 3 alerts
  *
  * SDI context: the Sistema di Interscambio (SDI) is the Italian Revenue Agency
- * platform for electronic invoicing (FatturaPA). Error codes used in tags:
- * 003 — file received and queued for processing
- * 004 — file rejected: signing certificate invalid or expired
- * 009 — file rejected: duplicate invoice identifier
+ * platform for electronic invoicing (FatturaPA). Rejection codes are five
+ * digits and are returned inside a Notifica di Scarto (NS). The codes used in
+ * the `sdi_error` tag below are taken from the official control list published
+ * by the Agenzia delle Entrate (Elenco dei controlli, v1.7):
+ *
+ * 00002 — nome file duplicato: a file with this name was already transmitted
+ * 00100 — certificato di firma scaduto
+ * 00102 — file non integro: the digital signature does not verify
+ * 00200 — file non conforme al formato: the XML fails the FatturaPA schema
+ *
+ * A successful ingestion produces no rejection code at all — it produces a
+ * Ricevuta di Consegna (RC). Scenarios that model healthy traffic therefore
+ * carry a null `sdi_error`, not a code.
  *
  * Security: scenario_id is validated against the static catalogue before any
  * database operation is performed. No user-supplied paths or SQL are accepted.
@@ -54,11 +63,12 @@ class ScenarioService
             'id' => 'scenario-1',
             'name' => 'CPU Spike — SDI Batch Processing',
             'description' => 'Simulates a CPU saturation event on the Milan SDI batch processor '
-                                . 'during peak FatturaPA invoice ingestion (SDI error code 003 — file received). '
+                                . 'during peak FatturaPA invoice ingestion. Transmission itself succeeds '
+                                . '(Ricevuta di Consegna), so no rejection code is recorded. '
                                 . 'Three metric samples: 55 % (healthy), 82 % (high breach), 97 % (critical breach).',
             'expected_outcome' => '2 alerts: 1 high + 1 critical',
             'source' => 'sdi-batch-milano-01',
-            'tags' => ['sdi_error' => '003', 'env' => 'prod', 'region' => 'eu-west-1', 'site' => 'CED Milano'],
+            'tags' => ['sdi_error' => null, 'env' => 'prod', 'region' => 'eu-west-1', 'site' => 'CED Milano'],
             'events' => [
                 ['name' => 'cpu_usage', 'value' => 55.0, 'unit' => 'percent'],
                 ['name' => 'cpu_usage', 'value' => 82.0, 'unit' => 'percent'],
@@ -70,11 +80,11 @@ class ScenarioService
             'name' => 'Memory Pressure — FatturaPA Validation',
             'description' => 'Simulates memory saturation on the Rome FatturaPA validator '
                                 . 'during batch validation of large XML invoice packages '
-                                . '(SDI error code 004 — invalid signing certificate). '
+                                . '(SDI rejection code 00100 — certificato di firma scaduto). '
                                 . 'Two samples: 70 % (healthy), 92 % (high breach).',
             'expected_outcome' => '1 alert: 1 high',
             'source' => 'fatturapa-validator-roma-01',
-            'tags' => ['sdi_error' => '004', 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Roma'],
+            'tags' => ['sdi_error' => '00100', 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Roma'],
             'events' => [
                 ['name' => 'memory_usage', 'value' => 70.0, 'unit' => 'percent'],
                 ['name' => 'memory_usage', 'value' => 92.0, 'unit' => 'percent'],
@@ -101,13 +111,13 @@ class ScenarioService
             'name' => 'FatturaPA Batch Failure Spike — Naples',
             'description' => 'Simulates a cascading failure on the Naples SDI batch node '
                                 . 'caused by a flood of duplicate invoice rejections '
-                                . '(SDI error code 009 — duplicate file identifier). '
+                                . '(SDI rejection code 00002 — nome file duplicato). '
                                 . 'Four metric samples produce three alert breaches: '
                                 . '65 % CPU (ok), 88 % memory (high), 96 % CPU (critical), '
                                 . '97 % memory (critical).',
             'expected_outcome' => '3 alerts: 1 high + 2 critical',
             'source' => 'sdi-batch-napoli-01',
-            'tags' => ['sdi_error' => '009', 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Napoli'],
+            'tags' => ['sdi_error' => '00002', 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Napoli'],
             'events' => [
                 ['name' => 'cpu_usage', 'value' => 65.0, 'unit' => 'percent'],
                 ['name' => 'memory_usage', 'value' => 88.0, 'unit' => 'percent'],
