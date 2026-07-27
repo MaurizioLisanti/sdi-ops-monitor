@@ -133,9 +133,9 @@ Required environment variables (or set them in `config/app_local.php`):
 Production-grade architecture deployed on AWS Elastic Beanstalk:
 SQS async workers, RDS MySQL, CloudWatch observability, CI on every push.
 
-SDI/FatturaPA integration is exercised through a scenario simulator
-reproducing real error codes (003 / 004 / 009) — no real invoice data
-is transmitted or stored.
+SDI/FatturaPA integration is exercised through a scenario simulator that
+replays official SDI rejection codes (00002, 00100) as published by the
+Agenzia delle Entrate — no real invoice data is transmitted or stored.
 
 Part of a broader ecosystem: fatturapa-mcp-server → sdi-ops-monitor.
 
@@ -241,13 +241,21 @@ sdi-ops-monitor/
 | **GovWay** | Open-source API gateway used for mTLS termination toward SDI endpoints |
 | **mTLS** | Mutual TLS — both client and server present certificates; required by SDI |
 
-**Simulated SDI error codes:**
+**Simulated SDI rejection codes**
+
+SDI rejection codes are five digits and are returned inside a *Notifica di
+Scarto* (NS). The codes below are taken from the official control list
+published by the Agenzia delle Entrate
+([Elenco dei controlli, v1.7](https://www.fatturapa.gov.it/export/documenti/Elenco-Controlli-versione-1.7.pdf)).
 
 | Code | Meaning | Simulated by |
 |---|---|---|
-| `003` | Invoice not delivered to recipient | `ScenarioService::run('003')` |
-| `004` | XML format validation error | `ScenarioService::run('004')` |
-| `009` | Duplicate invoice (already received) | `ScenarioService::run('009')` |
+| `00100` | Certificato di firma scaduto — the signing certificate has expired | `ScenarioService::run('scenario-2')` |
+| `00002` | Nome file duplicato — a file with this name was already transmitted | `ScenarioService::run('scenario-4')` |
+
+A successful transmission produces no rejection code: it produces a *Ricevuta
+di Consegna* (RC). Scenarios that model healthy traffic (`scenario-1`,
+`scenario-3`) therefore carry no code.
 
 ---
 ## Related projects
