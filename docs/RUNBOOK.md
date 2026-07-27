@@ -438,7 +438,7 @@ curl http://localhost:8080/health
 Page on-call **immediately** when:
 - `GET /health` returns 503 for ≥ 2 consecutive probes
 - `cpu_usage` or `memory_usage` alert with severity `critical` on any SDI node
-- Error rate alert on `fatturapa-validator-*` node (SDI error code 004/009 flood)
+- Error rate alert on `fatturapa-validator-*` node (flood of SDI rejections, e.g. 00100 / 00002)
 - `POST /api/metrics` error rate > 1 % sustained for > 5 minutes
 - SQS poll has produced 0 messages for > 30 minutes during business hours
 
@@ -523,8 +523,9 @@ Fix:    1. Make at least one request to generate a log entry:
 
 ---
 
-**SDI-1: Spike di error_rate su `fatturapa-validator-*` (SDI error code 004 — certificato non valido)**
-*Error code 004: file rejected — invalid or expired signing certificate*
+**SDI-1: Spike di error_rate su `fatturapa-validator-*` (SDI 00100 — certificato di firma scaduto)**
+*Rejection code 00100: the SDI refuses the file because the signing certificate has expired.
+Related codes: 00101 (revocato), 00104 (CA non affidabile), 00107 (certificato non valido).*
 
 ```
 Symptom: error_rate alert "high" or "critical" on fatturapa-validator-roma-01 (or similar).
@@ -541,8 +542,9 @@ Escalation: If error_rate stays > 10% for > 30 min, escalate to SDI Integration 
 
 ---
 
-**SDI-2: Spike di `cpu_usage` su `sdi-batch-*` durante picco di ingestione (SDI error code 003)**
-*Error code 003: file received — peak ingestion load*
+**SDI-2: Spike di `cpu_usage` su `sdi-batch-*` durante picco di ingestione**
+*Transmission is succeeding — the SDI returns a Ricevuta di Consegna (RC), not a
+rejection. This is a capacity problem, not a FatturaPA compliance problem.*
 
 ```
 Symptom: cpu_usage alert "critical" (≥ 95%) on sdi-batch-milano-01 during business hours.
@@ -558,8 +560,10 @@ Escalation: If cpu_usage stays > 95% for > 20 min, escalate to Infrastructure te
 
 ---
 
-**SDI-3: Duplicate invoice flood (SDI error code 009)**
-*Error code 009: file rejected — duplicate invoice identifier*
+**SDI-3: Duplicate file name flood (SDI 00002 — nome file duplicato)**
+*Rejection code 00002: the SDI refuses a file whose name was already transmitted.
+Note the code is about the file name, not the invoice number: a rejected invoice
+may be resent with the same number, but the file must be renamed.*
 
 ```
 Symptom: High error_rate + memory_usage spike on sdi-batch-napoli-01 (or similar).
@@ -679,9 +683,10 @@ For SDI-specific incidents involving Italian Revenue Agency (Agenzia delle Entra
 
 1. **Identify** the SDI error code in the Log Viewer (`context.tags.sdi_error`)
 2. **Classify**:
-   - Error `003` (file received) — ingestion load issue → Infrastructure Lead
-   - Error `004` (invalid certificate) → SDI Integration Team + affected organization
-   - Error `009` (duplicate invoice) → SDI Integration Team
+   - No rejection code (RC received) — ingestion load issue → Infrastructure Lead
+   - `00100` / `00101` / `00104` / `00107` (signing certificate) → SDI Integration Team + affected organization
+   - `00002` (duplicate file name) → SDI Integration Team
+   - `00200` / `00201` (XML not schema-conformant) → SDI Integration Team
 3. **Document** in the incident channel with: source system, error code, volume, correlation IDs
 4. **Do not** attempt to reprocess rejected invoices without SDI Integration Team approval
 
