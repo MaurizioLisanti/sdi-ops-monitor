@@ -9,6 +9,7 @@ use App\Model\Table\AlertsTable;
 use App\Service\AlertsService;
 use Cake\Core\Configure;
 use Cake\TestSuite\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * AlertsServiceTest — unit/integration tests for AlertsService::evaluate().
@@ -306,5 +307,131 @@ class AlertsServiceTest extends TestCase
             (string)$result->message,
             'A countdown breach must never be described as "exceeded".'
         );
+    }
+
+    /**
+     * The built-in defaults must cover the four service metrics.
+     *
+     * These are the numbers a deployment inherits when it configures nothing.
+     * If a metric silently has no rule-set, it is not being watched at all —
+     * so this test asserts the contract of the defaults rather than trusting
+     * that the constant was written correctly.
+     *
+     * @return array<string, array{0: string, 1: float, 2: string}>
+     */
+    public static function serviceMetricDefaultsProvider(): array
+    {
+        return [
+            // Receipts stalled for two hours: the channel has stopped answering.
+            'receipt lag 120 min is critical' => ['sdi_receipt_lag_minutes', 120.0, 'critical'],
+            'receipt lag 45 min is high' => ['sdi_receipt_lag_minutes', 45.0, 'high'],
+            // A rejection rate moving as a step function means one systematic cause.
+            'rejection rate 20% is critical' => ['sdi_rejection_rate', 20.0, 'critical'],
+            'rejection rate 7% is high' => ['sdi_rejection_rate', 7.0, 'high'],
+            // Volume-dependent, but never unmonitored.
+            'pending 2500 is critical' => ['invoices_pending', 2500.0, 'critical'],
+            'pending 800 is high' => ['invoices_pending', 800.0, 'high'],
+            // Countdown: an expired certificate stops every transmission at once.
+            'cert 3 days left is critical' => ['signing_cert_expiry_days', 3.0, 'critical'],
+            'cert 20 days left is high' => ['signing_cert_expiry_days', 20.0, 'high'],
+        ];
+    }
+
+    /**
+     * Each service metric must reach the expected severity using only defaults.
+     *
+     * @param string $metricName The metric under test.
+     * @param float $value The measured value.
+     * @param string $expectedSeverity The severity the defaults should produce.
+     * @return void
+     */
+    #[DataProvider('serviceMetricDefaultsProvider')]
+    public function testServiceMetricDefaults(
+        string $metricName,
+        float $value,
+        string $expectedSeverity
+    ): void {
+        $metric = new Metric(['name' => $metricName, 'value' => $value]);
+
+        $result = $this->service->evaluate($metric, '3f2b8c14-9d7e-4a51-bc63-0e8f5a2d9147');
+
+        $this->assertInstanceOf(
+            Alert::class,
+            $result,
+            sprintf('%s = %.4g must raise an alert on built-in defaults.', $metricName, $value)
+        );
+        $this->assertSame(
+            $expectedSeverity,
+            $result->severity,
+            sprintf('%s = %.4g must resolve to %s.', $metricName, $value, $expectedSeverity)
+        );
+    }
+
+    /**
+     * Healthy service metrics must stay silent on the built-in defaults.
+     *
+     * The certificate case is the one that matters: a certificate valid for
+     * another 200 days must not alert, even though 200 is a large number and
+     * the naive comparison would treat it as a breach.
+     *
+     * @return array<string, array{0: string, 1: float}>
+     */
+    public static function healthyServiceMetricProvider(): array
+    {
+        return [
+            'receipt lag 4 min' => ['sdi_receipt_lag_minutes', 4.0],
+            'rejection rate 1.2%' => ['sdi_rejection_rate', 1.2],
+            'pending 60 invoices' => ['invoices_pending', 60.0],
+            'cert valid 200 more days' => ['signing_cert_expiry_days', 200.0],
+        ];
+    }
+
+    /**
+     * @param string $metricName The metric under test.
+     * @param float $value A value that should be considered healthy.
+     * @return void
+     */
+    #[DataProvider('healthyServiceMetricProvider')]
+    public function testHealthyServiceMetricsDoNotAlert(string $metricName, float $value): void
+    {
+        $countBefore = $this->alertsTable->find()->count();
+
+        $metric = new Metric(['name' => $metricName, 'value' => $value]);
+        $result = $this->service->evaluate($metric, '3f2b8c14-9d7e-4a51-bc63-0e8f5a2d9147');
+
+        $this->assertNull(
+            $result,
+            sprintf('%s = %.4g is healthy and must not alert.', $metricName, $value)
+        );
+        $this->assertSame(
+            $countBefore,
+            $this->alertsTable->find()->count(),
+            'No Alert row must be written for a healthy metric.'
+        );
+    }
+
+    /**
+     * Infrastructure metrics must survive the move to domain thresholds.
+     *
+     * cpu_usage and memory_usage were the original thresholds and are kept as
+     * diagnostic context — the explanation for why receipts are lagging. This
+     * test exists so a future cleanup cannot quietly drop them.
+     *
+     * @return void
+     */
+    public function testInfrastructureMetricsStillEvaluated(): void
+    {
+        foreach (['cpu_usage' => 97.0, 'memory_usage' => 96.0] as $name => $value) {
+            $metric = new Metric(['name' => $name, 'value' => $value]);
+
+            $result = $this->service->evaluate($metric, '3f2b8c14-9d7e-4a51-bc63-0e8f5a2d9147');
+
+            $this->assertInstanceOf(
+                Alert::class,
+                $result,
+                sprintf('%s must still be evaluated as diagnostic context.', $name)
+            );
+            $this->assertSame('critical', $result->severity);
+        }
     }
 }
