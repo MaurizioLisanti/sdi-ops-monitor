@@ -93,4 +93,47 @@ return [
             ],
         ],
     ],
+
+    // ── Alert thresholds ────────────────────────────────────────────────
+    //
+    // Overrides AlertsService::DEFAULT_THRESHOLDS per metric. A metric listed
+    // here replaces its built-in rule-set entirely; metrics not listed keep
+    // their defaults.
+    //
+    // Rules default to firing when the value climbs to or above the threshold.
+    // Declare 'direction' => 'below' for countdown metrics, where the danger is
+    // the number getting smaller — days left before the signing certificate
+    // expires being the case that matters here.
+    //
+    // The defaults are documented with their reasoning in AlertsService. Two
+    // are worth revisiting on every deployment:
+    //
+    //   invoices_pending — volume-dependent. 500 pending is an emergency for a
+    //     studio filing thirty invoices a day and an ordinary Monday for a
+    //     utility filing fifty thousand. Size it against real traffic.
+    //
+    //   signing_cert_expiry_days — depends on how long your certification
+    //     authority takes to reissue. Lengthen the high threshold if renewal
+    //     needs procurement approval.
+    //
+    // Uncomment and adjust as needed:
+    //
+    // 'Thresholds' => [
+    //     'sdi_receipt_lag_minutes' => [
+    //         ['threshold' => 30.0, 'severity' => 'high'],
+    //         ['threshold' => 120.0, 'severity' => 'critical'],
+    //     ],
+    //     'sdi_rejection_rate' => [
+    //         ['threshold' => 5.0, 'severity' => 'high'],
+    //         ['threshold' => 15.0, 'severity' => 'critical'],
+    //     ],
+    //     'invoices_pending' => [
+    //         ['threshold' => 500.0, 'severity' => 'high'],
+    //         ['threshold' => 2000.0, 'severity' => 'critical'],
+    //     ],
+    //     'signing_cert_expiry_days' => [
+    //         ['threshold' => 30.0, 'severity' => 'high', 'direction' => 'below'],
+    //         ['threshold' => 7.0, 'severity' => 'critical', 'direction' => 'below'],
+    //     ],
+    // ],
 ];
