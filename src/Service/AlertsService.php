@@ -71,12 +71,94 @@ class AlertsService
 
     /**
      * Built-in fallback thresholds used when Configure does not define the metric.
-     * Each entry is an array of rules: ['threshold' => float, 'severity' => string].
-     * Rules are evaluated independently; the highest triggered severity wins.
+     *
+     * Two tiers, deliberately separated:
+     *
+     * SERVICE metrics describe what the business actually cares about — are
+     * invoices reaching the SDI and coming back accepted. These drive the
+     * dashboard state, because they are the ones a non-technical operator can
+     * act on.
+     *
+     * INFRASTRUCTURE metrics describe the machines doing the work. They rarely
+     * matter on their own, but they are what turns "8,000 invoices are stuck"
+     * into "the Milan batch node is saturated, which is why they are stuck".
+     * Kept as diagnostic context rather than as the primary signal.
+     *
+     * Each entry is a list of rules; rules are evaluated independently and the
+     * highest triggered severity wins. Every number below is a starting point
+     * that deployments are expected to tune in app_local.php — the values are
+     * documented with their reasoning so that tuning is an informed decision
+     * rather than guesswork.
      *
      * @var array<string, list<array{threshold: float, severity: string, direction?: string}>>
      */
     private const DEFAULT_THRESHOLDS = [
+        // ── Service metrics ──────────────────────────────────────────────
+        /*
+         * Minutes elapsed since the oldest transmitted invoice still without a
+         * receipt. This is the single most informative metric in the system: a
+         * healthy channel returns a Ricevuta di Consegna or a Notifica di Scarto
+         * promptly, so a lag that keeps growing means transmissions are leaving
+         * but nothing is coming back — a stuck channel rather than a data
+         * problem. Half an hour is worth a look; two hours means the flow has
+         * stopped and invoices are silently accumulating.
+         */
+        'sdi_receipt_lag_minutes' => [
+            ['threshold' => 30.0, 'severity' => 'high'],
+            ['threshold' => 120.0, 'severity' => 'critical'],
+        ],
+
+        /*
+         * Percentage of transmissions answered with a Notifica di Scarto.
+         * A residual rate is normal and irreducible: operators mistype a
+         * recipient code, a customer's VAT registration lapses. What matters is
+         * the jump, because a rejection rate that moves as a step function is
+         * almost never many independent mistakes — it is one systematic cause
+         * affecting a whole batch: an expired certificate, an XML template
+         * change, stale registry data.
+         */
+        'sdi_rejection_rate' => [
+            ['threshold' => 5.0, 'severity' => 'high'],
+            ['threshold' => 15.0, 'severity' => 'critical'],
+        ],
+
+        /*
+         * Invoices transmitted and still awaiting an outcome.
+         *
+         * Unlike the metrics above, this one has no meaningful universal value:
+         * 500 pending is an emergency for a studio filing thirty invoices a day
+         * and an ordinary Monday for a utility filing fifty thousand. The
+         * defaults here suit a mid-sized intermediary and exist so the metric is
+         * never silently unmonitored; sizing them against real traffic is the
+         * first thing a deployment should do.
+         */
+        'invoices_pending' => [
+            ['threshold' => 500.0, 'severity' => 'high'],
+            ['threshold' => 2000.0, 'severity' => 'critical'],
+        ],
+
+        /*
+         * Days remaining before the signing certificate expires — a countdown,
+         * hence direction 'below'.
+         *
+         * This is the only metric here that predicts an outage instead of
+         * reporting one. Once the certificate lapses the SDI refuses every
+         * single file with code 00100 and the whole flow stops at once, with no
+         * partial degradation to notice first. Renewal involves a certification
+         * authority and takes days, so thirty days is when the paperwork should
+         * start and seven days is already an emergency.
+         */
+        'signing_cert_expiry_days' => [
+            ['threshold' => 30.0, 'severity' => 'high', 'direction' => 'below'],
+            ['threshold' => 7.0, 'severity' => 'critical', 'direction' => 'below'],
+        ],
+
+        // ── Infrastructure metrics (diagnostic context) ──────────────────
+        /*
+         * Saturation of the nodes running ingestion and validation. Not a
+         * FatturaPA compliance problem in itself, but the usual explanation
+         * when sdi_receipt_lag_minutes climbs while rejections stay flat.
+         */
         'cpu_usage' => [
             ['threshold' => 80.0, 'severity' => 'high'],
             ['threshold' => 95.0, 'severity' => 'critical'],
