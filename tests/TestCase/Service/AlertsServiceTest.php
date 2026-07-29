@@ -7,6 +7,7 @@ use App\Model\Entity\Alert;
 use App\Model\Entity\Metric;
 use App\Model\Table\AlertsTable;
 use App\Service\AlertsService;
+use Cake\Core\Configure;
 use Cake\TestSuite\TestCase;
 
 /**
@@ -20,6 +21,11 @@ use Cake\TestSuite\TestCase;
  *   1. Value above the highest threshold → Alert created with 'critical' severity.
  *   2. Value below all thresholds         → null returned, no Alert persisted.
  *   3. Unknown metric name                → null returned, no Alert persisted.
+ *   4. Countdown thresholds (direction='below') fire when the value drops.
+ *   5. Countdown thresholds stay silent while the value is comfortably high.
+ *   6. Direction is per-rule, so a rule-set may mix both directions.
+ *   7. An unknown direction falls back to 'above' rather than silencing the rule.
+ *   8. Alert wording follows the direction that was breached.
  */
 class AlertsServiceTest extends TestCase
 {
@@ -55,6 +61,12 @@ class AlertsServiceTest extends TestCase
      */
     protected function tearDown(): void
     {
+        // Remove any threshold injected by a test so rule-sets never leak
+        // across cases — Configure is global state.
+        Configure::delete('Thresholds.signing_cert_expiry_days');
+        Configure::delete('Thresholds.mixed_direction_metric');
+        Configure::delete('Thresholds.typo_direction_metric');
+
         $this->getTableLocator()->clear();
         parent::tearDown();
     }
@@ -137,6 +149,162 @@ class AlertsServiceTest extends TestCase
         $this->assertNull(
             $result,
             'evaluate() must return null for metric names with no threshold configuration.'
+        );
+    }
+
+    /**
+     * A countdown threshold must fire when the measured value falls to or below it.
+     *
+     * signing_cert_expiry_days is the motivating case: the SDI rejects every
+     * transmission with code 00100 once the signing certificate has expired, so
+     * the operator needs warning while the number is still shrinking. A rule
+     * expressed as "value >= threshold" cannot say this at all.
+     *
+     * @return void
+     */
+    public function testCountdownThresholdFiresWhenValueDrops(): void
+    {
+        Configure::write('Thresholds.signing_cert_expiry_days', [
+            ['threshold' => 30.0, 'severity' => 'high', 'direction' => 'below'],
+            ['threshold' => 7.0, 'severity' => 'critical', 'direction' => 'below'],
+        ]);
+
+        // 5 days left: breaches both rules, critical must win.
+        $metric = new Metric(['name' => 'signing_cert_expiry_days', 'value' => 5.0]);
+
+        $result = $this->service->evaluate($metric, '3f2b8c14-9d7e-4a51-bc63-0e8f5a2d9147');
+
+        $this->assertInstanceOf(
+            Alert::class,
+            $result,
+            'A countdown metric below its threshold must produce an Alert.'
+        );
+        $this->assertSame(
+            'critical',
+            $result->severity,
+            '5 days remaining must trigger critical (threshold <= 7), not high.'
+        );
+    }
+
+    /**
+     * A countdown threshold must stay silent while the value is still healthy.
+     *
+     * This is the test that would fail if direction were ignored: with the
+     * default "above" comparison, 90 >= 30 and 90 >= 7 both hold, so a
+     * perfectly valid certificate would raise a critical alert.
+     *
+     * @return void
+     */
+    public function testCountdownThresholdSilentWhenValueIsHigh(): void
+    {
+        Configure::write('Thresholds.signing_cert_expiry_days', [
+            ['threshold' => 30.0, 'severity' => 'high', 'direction' => 'below'],
+            ['threshold' => 7.0, 'severity' => 'critical', 'direction' => 'below'],
+        ]);
+
+        $countBefore = $this->alertsTable->find()->count();
+
+        // 90 days left: healthy, nothing to report.
+        $metric = new Metric(['name' => 'signing_cert_expiry_days', 'value' => 90.0]);
+
+        $result = $this->service->evaluate($metric, '3f2b8c14-9d7e-4a51-bc63-0e8f5a2d9147');
+
+        $this->assertNull(
+            $result,
+            'A certificate valid for 90 more days must not raise an alert.'
+        );
+        $this->assertSame(
+            $countBefore,
+            $this->alertsTable->find()->count(),
+            'No Alert must be persisted for a healthy countdown metric.'
+        );
+    }
+
+    /**
+     * Direction is a property of the individual rule, not of the whole rule-set.
+     *
+     * A metric may legitimately be unhealthy at both ends. Here only the
+     * "below" rule is breached, so evaluation must consider each rule on its
+     * own terms rather than applying one comparison to all of them.
+     *
+     * @return void
+     */
+    public function testDirectionIsResolvedPerRule(): void
+    {
+        Configure::write('Thresholds.mixed_direction_metric', [
+            ['threshold' => 100.0, 'severity' => 'high'],
+            ['threshold' => 10.0, 'severity' => 'critical', 'direction' => 'below'],
+        ]);
+
+        $metric = new Metric(['name' => 'mixed_direction_metric', 'value' => 4.0]);
+
+        $result = $this->service->evaluate($metric, '3f2b8c14-9d7e-4a51-bc63-0e8f5a2d9147');
+
+        $this->assertInstanceOf(
+            Alert::class,
+            $result,
+            'The "below" rule must fire even though the "above" rule does not.'
+        );
+        $this->assertSame(
+            'critical',
+            $result->severity,
+            'Only the countdown rule is breached, so its severity must win.'
+        );
+    }
+
+    /**
+     * An unrecognised direction must fall back to "above", not disable the rule.
+     *
+     * A typo in app_local.php must never turn a threshold into a no-op: a
+     * monitor that silently stops watching is more dangerous than one that
+     * fires conservatively.
+     *
+     * @return void
+     */
+    public function testUnknownDirectionFallsBackToAbove(): void
+    {
+        Configure::write('Thresholds.typo_direction_metric', [
+            ['threshold' => 50.0, 'severity' => 'high', 'direction' => 'belwo'],
+        ]);
+
+        $metric = new Metric(['name' => 'typo_direction_metric', 'value' => 80.0]);
+
+        $result = $this->service->evaluate($metric, '3f2b8c14-9d7e-4a51-bc63-0e8f5a2d9147');
+
+        $this->assertInstanceOf(
+            Alert::class,
+            $result,
+            'A misspelled direction must not silence the threshold.'
+        );
+    }
+
+    /**
+     * The alert message must describe the breach in the direction it happened.
+     *
+     * "Value 5 exceeded critical threshold" is simply false for a countdown
+     * metric, and an operator reading it at 3am would look for the wrong cause.
+     *
+     * @return void
+     */
+    public function testAlertWordingFollowsBreachDirection(): void
+    {
+        Configure::write('Thresholds.signing_cert_expiry_days', [
+            ['threshold' => 7.0, 'severity' => 'critical', 'direction' => 'below'],
+        ]);
+
+        $metric = new Metric(['name' => 'signing_cert_expiry_days', 'value' => 5.0]);
+        $result = $this->service->evaluate($metric, '3f2b8c14-9d7e-4a51-bc63-0e8f5a2d9147');
+
+        $this->assertInstanceOf(Alert::class, $result);
+        $this->assertStringContainsString(
+            'dropped below',
+            (string)$result->message,
+            'A countdown breach must be worded as a drop, not as an excess.'
+        );
+        $this->assertStringNotContainsString(
+            'exceeded',
+            (string)$result->message,
+            'A countdown breach must never be described as "exceeded".'
         );
     }
 }
