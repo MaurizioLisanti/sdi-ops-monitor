@@ -21,12 +21,25 @@ use RuntimeException;
  * Threshold configuration (via app_local.php → Configure::read('Thresholds')):
  * ```php
  * 'Thresholds' => [
- * 'cpu_usage' => [
- * ['threshold' => 80.0, 'severity' => 'high'],
- * ['threshold' => 95.0, 'severity' => 'critical'],
+ * 'sdi_receipt_lag_minutes' => [
+ * ['threshold' => 30.0, 'severity' => 'high'],
+ * ['threshold' => 120.0, 'severity' => 'critical'],
+ * ],
+ * 'signing_cert_expiry_days' => [
+ * ['threshold' => 30.0, 'severity' => 'high', 'direction' => 'below'],
+ * ['threshold' => 7.0, 'severity' => 'critical', 'direction' => 'below'],
  * ],
  * ],
  * ```
+ *
+ * Threshold direction: rules default to 'above', which fires when the measured
+ * value meets or exceeds the threshold — the right semantics for saturation
+ * metrics such as CPU usage or queue depth. Some operational metrics are
+ * healthy when high and dangerous when low: days remaining before the SDI
+ * signing certificate expires is the canonical example, since an expired
+ * certificate means every transmission is rejected with code 00100. Those
+ * rules declare 'direction' => 'below' and fire when the value drops to or
+ * under the threshold.
  *
  * Supported severity levels (ascending): low → medium → high → critical.
  */
@@ -39,11 +52,29 @@ class AlertsService
     private const SEVERITY_ORDER = ['low', 'medium', 'high', 'critical'];
 
     /**
+     * Threshold comparison directions.
+     *
+     * ABOVE — fire when value >= threshold (saturation metrics).
+     * BELOW — fire when value <= threshold (countdown metrics, e.g. days to expiry).
+     */
+    private const DIRECTION_ABOVE = 'above';
+    private const DIRECTION_BELOW = 'below';
+
+    /**
+     * Direction assumed when a rule does not declare one.
+     *
+     * Defaulting to ABOVE keeps every pre-existing rule-set working unchanged,
+     * so adding direction support is not a breaking change for deployments that
+     * already define Thresholds in app_local.php.
+     */
+    private const DEFAULT_DIRECTION = self::DIRECTION_ABOVE;
+
+    /**
      * Built-in fallback thresholds used when Configure does not define the metric.
      * Each entry is an array of rules: ['threshold' => float, 'severity' => string].
      * Rules are evaluated independently; the highest triggered severity wins.
      *
-     * @var array<string, list<array{threshold: float, severity: string}>>
+     * @var array<string, list<array{threshold: float, severity: string, direction?: string}>>
      */
     private const DEFAULT_THRESHOLDS = [
         'cpu_usage' => [
@@ -116,11 +147,14 @@ class AlertsService
             return null;
         }
 
-        // Build the alert message including which threshold was breached.
+        // Build the alert message. The verb follows the direction of the breached
+        // rule: "exceeded" is plainly wrong for a countdown metric, where an alert
+        // means the value has fallen too low rather than climbed too high.
         $message = sprintf(
-            "Metric '%s' value %.4g exceeded %s threshold.",
+            "Metric '%s' value %.4g %s %s threshold.",
             $metricName,
             $metricValue,
+            $this->breachVerb($rules, $metricValue, $severity),
             $severity,
         );
 
@@ -176,11 +210,11 @@ class AlertsService
      * has rules for the requested metric.
      *
      * @param string $metricName The metric name to look up (e.g. 'cpu_usage').
-     * @return list<array{threshold: float, severity: string}>|null Array of rules, or null if none.
+     * @return list<array{threshold: float, severity: string, direction?: string}>|null Array of rules, or null if none.
      */
     private function resolveThresholds(string $metricName): ?array
     {
-        /** @var list<array{threshold: float, severity: string}>|null $configured */
+        /** @var list<array{threshold: float, severity: string, direction?: string}>|null $configured */
         $configured = Configure::read('Thresholds.' . $metricName);
 
         if ($configured !== null) {
@@ -196,7 +230,7 @@ class AlertsService
      * Iterates all rules and picks the one with the highest position in SEVERITY_ORDER.
      * Returns null when no rule is triggered (value is below every threshold).
      *
-     * @param list<array{threshold: float, severity: string}> $rules Ordered set of threshold rules.
+     * @param list<array{threshold: float, severity: string, direction?: string}> $rules Ordered set of threshold rules.
      * @param float $metricValue The measured metric value.
      * @return string|null The winning severity string, or null if no threshold is breached.
      */
@@ -206,16 +240,73 @@ class AlertsService
         $bestSeverityPos = -1;
 
         foreach ($rules as $rule) {
-            if ($metricValue >= (float)$rule['threshold']) {
-                $pos = array_search($rule['severity'], self::SEVERITY_ORDER, true);
+            if (!$this->isBreached($rule, $metricValue)) {
+                continue;
+            }
 
-                if ($pos !== false && $pos > $bestSeverityPos) {
-                    $bestSeverityPos = $pos;
-                    $bestSeverity = $rule['severity'];
-                }
+            $pos = array_search($rule['severity'], self::SEVERITY_ORDER, true);
+
+            if ($pos !== false && $pos > $bestSeverityPos) {
+                $bestSeverityPos = $pos;
+                $bestSeverity = $rule['severity'];
             }
         }
 
         return $bestSeverity;
+    }
+
+    /**
+     * Describe how the winning rule was breached, for use in the alert message.
+     *
+     * Returns "dropped below" when the rule that produced the winning severity
+     * is a countdown rule, "exceeded" otherwise. When several rules of the same
+     * severity are breached, the first match wins — mixing directions within a
+     * single severity is not a meaningful configuration.
+     *
+     * @param list<array{threshold: float, severity: string, direction?: string}> $rules Rule-set under evaluation.
+     * @param float $metricValue The measured metric value.
+     * @param string $severity The severity that won evaluation.
+     * @return string A verb phrase describing the breach.
+     */
+    private function breachVerb(array $rules, float $metricValue, string $severity): string
+    {
+        foreach ($rules as $rule) {
+            if ($rule['severity'] !== $severity || !$this->isBreached($rule, $metricValue)) {
+                continue;
+            }
+
+            if (($rule['direction'] ?? self::DEFAULT_DIRECTION) === self::DIRECTION_BELOW) {
+                return 'dropped below';
+            }
+
+            return 'exceeded';
+        }
+
+        return 'exceeded';
+    }
+
+    /**
+     * Decide whether a single rule is breached by the measured value.
+     *
+     * A rule without an explicit direction is treated as ABOVE, so rule-sets
+     * written before direction support behave exactly as they did. An
+     * unrecognised direction is also treated as ABOVE rather than throwing:
+     * a typo in configuration must not silence a threshold, because a monitor
+     * that fails quietly is worse than one that fires conservatively.
+     *
+     * @param array{threshold: float, severity: string, direction?: string} $rule The rule under test.
+     * @param float $metricValue The measured metric value.
+     * @return bool True when the rule is breached.
+     */
+    private function isBreached(array $rule, float $metricValue): bool
+    {
+        $threshold = (float)$rule['threshold'];
+        $direction = $rule['direction'] ?? self::DEFAULT_DIRECTION;
+
+        if ($direction === self::DIRECTION_BELOW) {
+            return $metricValue <= $threshold;
+        }
+
+        return $metricValue >= $threshold;
     }
 }
