@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Test\TestCase\Controller;
 
+use App\Service\ScenarioService;
 use Cake\TestSuite\IntegrationTestTrait;
 use Cake\TestSuite\TestCase;
 
@@ -100,16 +101,19 @@ class ScenarioSimulatorControllerTest extends TestCase
         $this->assertResponseOk();
         $this->assertContentType('text/html');
         $this->assertResponseContains('Scenario Simulator');
-        // Verify at least one scenario card is rendered.
-        $this->assertResponseContains('CPU Spike');
+        // Verify scenario cards are rendered. Asserting on the ids rather than on
+        // display names keeps this test from breaking every time a scenario is
+        // renamed, while still failing if the catalogue stops rendering at all.
+        $this->assertResponseContains('scenario-1');
+        $this->assertResponseContains('scenario-3');
     }
 
     /**
      * Verify that POST /simulate/run with a valid scenario_id returns HTTP 200
      * and renders the results page showing the scenario name and correlation ID.
      *
-     * scenario-3 ("Normal Operation — All Clear") is chosen because it produces
-     * zero alerts, limiting DB side-effects to three harmless Metric inserts.
+     * scenario-3 ("Normal operation — all clear") is chosen because it produces
+     * zero alerts, limiting DB side-effects to a handful of harmless Metric inserts.
      *
      * @return void
      */
@@ -131,8 +135,13 @@ class ScenarioSimulatorControllerTest extends TestCase
 
         $this->assertResponseOk();
         $this->assertContentType('text/html');
-        // Results page must show the scenario name and the correlation ID section.
-        $this->assertResponseContains('Normal Operation');
+        // Results page must identify the scenario that ran and show the
+        // correlation ID used to trace it through the logs. The name is read
+        // from the catalogue rather than written literally, so renaming a
+        // scenario cannot break this test.
+        $catalogue = (new ScenarioService($this->fetchTable('Metrics'), $this->fetchTable('Alerts')))
+            ->getScenarios();
+        $this->assertResponseContains($catalogue['scenario-3']['name']);
         $this->assertResponseContains('Correlation ID');
     }
 
