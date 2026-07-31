@@ -198,7 +198,16 @@ class AiDiagnosticsService
     }
 
     /**
-     * Fetch the last MAX_METRICS metric events ordered by insertion time (newest first).
+     * Fetch the last MAX_METRICS metric events, most recently measured first.
+     *
+     * Ordered by recorded_at rather than created: the former is when the reading
+     * was taken, the latter merely when this system stored it. The distinction
+     * matters because both columns have one-second granularity, and a burst of
+     * SQS messages — or a scenario run — lands several readings inside the same
+     * second. Ordering by created then leaves rows in arbitrary order, and
+     * anything reading "the latest value per metric" can silently pick a stale
+     * one. Sorting by id as a tiebreaker makes the order total, so the result is
+     * reproducible even when two readings share a timestamp.
      *
      * @return array<\App\Model\Entity\Metric> Recent metric entity array.
      */
@@ -207,7 +216,8 @@ class AiDiagnosticsService
         /** @var array<\App\Model\Entity\Metric> $metrics */
         $metrics = $this->metricsTable
             ->find()
-            ->orderByDesc('created')
+            ->orderByDesc('recorded_at')
+            ->orderByDesc('id')
             ->limit(self::MAX_METRICS)
             ->all()
             ->toArray();
@@ -396,7 +406,9 @@ class AiDiagnosticsService
     /**
      * Reduce the metric stream to the most recent value for each metric name.
      *
-     * Metrics arrive newest-first, so the first sighting of a name wins. Values
+     * Metrics arrive most-recently-measured first, so the first sighting of a
+     * name wins — which is only correct because fetchRecentMetrics() imposes a
+     * total order; see the note there. Values
      * are collapsed across sources deliberately: the failure modes below are
      * about the flow as a whole, and a per-node breakdown would obscure the
      * fact that, say, receipts are lagging everywhere at once.
