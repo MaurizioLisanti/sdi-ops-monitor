@@ -500,4 +500,52 @@ class AiDiagnosticsServiceTest extends TestCase
         }
         $this->assertNotEmpty($result->diagnosis);
     }
+
+    /**
+     * Readings sharing a timestamp must not make the diagnosis read a stale value.
+     *
+     * Regression test for a bug the scenario simulator exposed. Both created and
+     * recorded_at have one-second granularity, so a burst of SQS messages lands
+     * several readings inside the same second. Ordering only by created then
+     * leaves those rows in arbitrary order, and "the latest value per metric"
+     * silently picked whichever the database happened to return first — here
+     * that meant diagnosing a 95-minute stall from a 4-minute reading, and
+     * missing the failure entirely.
+     *
+     * Three lag readings are inserted with the same recorded_at, in the order a
+     * real burst would arrive. The most recent one must win.
+     *
+     * @return void
+     */
+    public function testLatestValueWinsWhenTimestampsCollide(): void
+    {
+        $sharedTimestamp = date('Y-m-d H:i:s');
+
+        foreach ([4.0, 45.0, 95.0] as $lag) {
+            $metric = $this->metricsTable->newEntity([
+                'source' => 'sdi-batch-milano-01',
+                'name' => 'sdi_receipt_lag_minutes',
+                'value' => $lag,
+                'unit' => 'minutes',
+                'recorded_at' => $sharedTimestamp,
+            ]);
+            $this->metricsTable->saveOrFail($metric);
+        }
+
+        $this->seedMetrics(['sdi_rejection_rate' => 1.1]);
+
+        $result = (new AiDiagnosticsService($this->metricsTable, $this->alertsTable))
+            ->diagnose('test-corr-collision');
+
+        $this->assertStringContainsString(
+            '95 minutes',
+            $result->diagnosis,
+            'The most recently inserted reading must be the one diagnosed.'
+        );
+        $this->assertStringContainsStringIgnoringCase(
+            'stalled',
+            $result->diagnosis,
+            'Reading a stale value would hide the stall behind a healthy number.'
+        );
+    }
 }
