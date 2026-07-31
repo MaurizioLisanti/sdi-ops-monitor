@@ -136,7 +136,7 @@ curl -u ops:YOUR_PASSWORD http://localhost:8080/
 
 Each alert card shows:
 - **Source** (`sdi-batch-milano-01`, `fatturapa-validator-roma-01`, …) — the originating system
-- **Metric** (`cpu_usage`, `memory_usage`, `error_rate`) — the breached metric
+- **Metric** (e.g. `sdi_receipt_lag_minutes`, `sdi_rejection_rate`, `cpu_usage`) — the breached metric
 - **Value** — the measured value at breach time
 - **Severity** — `critical` / `high` / `warning`
 - **Status** — `open` / `acknowledged`
@@ -183,7 +183,7 @@ curl -u ops:YOUR_PASSWORD \
 | Field | Type | Required | Notes |
 |---|---|---|---|
 | `source` | string | Yes | Identifier of the originating system |
-| `name` | string | Yes | Metric name: `cpu_usage`, `memory_usage`, `error_rate` |
+| `name` | string | Yes | Metric name — see the threshold table in §4 |
 | `value` | float | Yes | Numeric measurement value |
 | `unit` | string | No | `percent`, `ms`, `count`, etc. |
 | `tags` | object | No | Key-value metadata (env, region, site) |
@@ -191,13 +191,38 @@ curl -u ops:YOUR_PASSWORD \
 
 ### Alert Thresholds / Soglie di alert
 
-| Metric | `high` | `critical` |
-|---|---|---|
-| `cpu_usage` | ≥ 80 % | ≥ 95 % |
-| `memory_usage` | ≥ 85 % | ≥ 95 % |
-| `error_rate` | ≥ 5 % | ≥ 10 % |
+Two tiers. **Service metrics** answer the question the business asks — are
+invoices reaching the SDI and coming back accepted — and drive the dashboard
+state. **Infrastructure metrics** are diagnostic context: rarely the story on
+their own, usually the explanation for why receipts are lagging.
+
+| Metric | `high` | `critical` | Meaning |
+|---|---|---|---|
+| `sdi_receipt_lag_minutes` | ≥ 30 | ≥ 120 | Minutes since the oldest transmitted invoice still has no receipt |
+| `sdi_rejection_rate` | ≥ 5 % | ≥ 15 % | Share of transmissions answered with a Notifica di Scarto |
+| `invoices_pending` | ≥ 500 | ≥ 2000 | Invoices awaiting an outcome — **volume-dependent, tune per deployment** |
+| `signing_cert_expiry_days` | ≤ 30 | ≤ 7 | Days of signing-certificate validity left — **countdown** |
+| `cpu_usage` | ≥ 80 % | ≥ 95 % | Node saturation (diagnostic context) |
+| `memory_usage` | ≥ 85 % | ≥ 95 % | Node saturation (diagnostic context) |
 
 Thresholds are evaluated automatically after every successful metric save.
+
+**Note the direction column of `signing_cert_expiry_days`.** It is the only
+threshold here that fires when a value *falls*, and the only metric in the
+system that predicts an outage instead of reporting one: once the certificate
+lapses, the SDI refuses every file with code `00100` and the whole flow stops at
+once, with no partial degradation to notice first. Renewal involves a
+certification authority and takes days, so the `high` threshold is when the
+paperwork should start.
+
+`invoices_pending` is the one number in this table that has no universal value:
+500 pending is an emergency for a studio filing thirty invoices a day and an
+ordinary Monday for a utility filing fifty thousand. Size it against real
+traffic before trusting it.
+
+Overrides go in `config/app_local.php` under `Thresholds`; see
+`config/app_local.php.example` for a worked block. A metric listed there
+replaces its built-in rule-set entirely.
 
 ### SDI/FatturaPA Source Identifiers
 
@@ -265,17 +290,39 @@ curl -u ops:YOUR_PASSWORD \
 ```bash
 # Open the scenario selection form
 curl -u ops:YOUR_PASSWORD http://localhost:8080/simulate
-# → 200 HTML — scenario selector with 4 predefined scenarios
+# → 200 HTML — scenario selector with 6 predefined scenarios
 ```
 
 ### Available Scenarios / Scenari disponibili
 
-| ID | Name | Source | Expected Alerts |
+One failure mode per scenario. The alert counts below are asserted by
+`ScenarioServiceTest`, so they cannot drift away from what the code does.
+
+| ID | Name | Source | Alerts |
 |---|---|---|---|
-| `scenario-1` | CPU Spike — SDI Batch Processing | `sdi-batch-milano-01` | 2 (1 high + 1 critical) |
-| `scenario-2` | Memory Pressure — FatturaPA Validation | `fatturapa-validator-roma-01` | 1 (1 high) |
-| `scenario-3` | Normal Operation — All Clear | `sdi-gateway-torino-01` | 0 — system green |
-| `scenario-4` | FatturaPA Batch Failure Spike — Naples | `sdi-batch-napoli-01` | 3 (1 high + 2 critical) |
+| `scenario-1` | Stalled channel — no receipts coming back | `sdi-batch-milano-01` | 3 |
+| `scenario-2` | Saturated nodes — lag caused from inside | `fatturapa-validator-roma-01` | 4 |
+| `scenario-3` | Normal operation — all clear | `sdi-gateway-torino-01` | 0 |
+| `scenario-4` | Expired signing certificate — SDI 00100 | `sdi-batch-napoli-01` | 2 |
+| `scenario-5` | Duplicate file names on re-transmission — SDI 00002 | `sdi-batch-bologna-01` | 1 |
+| `scenario-6` | Certificate expiring — warning before the outage | `sdi-gateway-milano-02` | 1 |
+
+**Run 1 and 2 back to back.** Their service metrics are almost identical —
+receipts lagging, nothing being refused — but the cause is opposite: in 1 the
+channel has stopped answering, in 2 this system cannot keep up with the receipts
+it is receiving. Telling them apart is the reason the metric model has two
+tiers, and the diagnosis changes accordingly while the dashboard numbers barely
+move.
+
+**Scenarios 4 and 5 are the same pairing for rejections.** Both show a near-total
+rejection rate; the certificate is what separates a signing failure (`00100`)
+from a payload one (`00002`, `00200`). Re-sending helps in neither case until
+the underlying cause is fixed.
+
+**Scenario 6 is the only one where nothing is broken yet.** Every service metric
+is green and the system alerts anyway, because the certificate expires in five
+days. It is the one alert in this catalogue that can prevent an incident rather
+than shorten one.
 
 ### Running a Scenario / Eseguire uno scenario
 
@@ -397,15 +444,26 @@ The deterministic fallback activates **automatically** when:
 - The API call exceeds the 5-second timeout
 - The response body cannot be parsed
 
-Fallback threshold rules (same as alert engine):
+**The fallback is not a degraded mode.** It recognises failure modes from the
+combination of current values, not one metric at a time, so it names a cause and
+an action rather than listing which numbers are large:
 
-| Metric | Threshold | Fallback label |
-|---|---|---|
-| `cpu_usage` | ≥ 80 % | "CPU usage on \<source\>: \<value\>" |
-| `memory_usage` | ≥ 85 % | "Memory usage on \<source\>: \<value\>" |
-| `error_rate` | ≥ 5 % | "Error rate on \<source\>: \<value\>" |
+| Lag | Rejections | Certificate | Diagnosis |
+|---|---|---|---|
+| high | low | valid | Stalled channel — files accepted, answers missing. **Re-sending will not help.** |
+| high | low | valid, nodes saturated | Saturation is the cause — check capacity before looking at the SDI side |
+| low | near-total | expiring | Code `00100` — renew the certificate, then re-send with **renamed files** to avoid `00002` |
+| low | near-total | valid | Payload refused — check schema (`00200`) and identification data (`003xx`) |
+| low | low | ≤ 30 days | Nothing broken yet — start renewal now |
 
-No `OPENROUTER_API_KEY` is required for demo — the fallback is always available.
+When no known mode matches, the fallback reports the individual threshold
+breaches so the operator still sees the raw numbers. It never answers "check the
+logs" or "contact support": there is a test asserting exactly that across every
+mode, because a fluent but useless diagnosis costs an API call and tells the
+operator nothing the red light had not already said.
+
+No `OPENROUTER_API_KEY` is required for demo — the fallback is always available,
+and is what most deployments will actually read.
 
 ---
 
@@ -523,21 +581,27 @@ Fix:    1. Make at least one request to generate a log entry:
 
 ---
 
-**SDI-1: Spike di error_rate su `fatturapa-validator-*` (SDI 00100 — certificato di firma scaduto)**
+**SDI-1: Rejection rate spike with a lapsed certificate (SDI 00100 — certificato di firma scaduto)**
 *Rejection code 00100: the SDI refuses the file because the signing certificate has expired.
 Related codes: 00101 (revocato), 00104 (CA non affidabile), 00107 (certificato non valido).*
 
 ```
-Symptom: error_rate alert "high" or "critical" on fatturapa-validator-roma-01 (or similar).
-         Log Viewer shows repeated 004 errors in context.tags.sdi_error.
-Cause:   Batch of FatturaPA invoices submitted with expired/revoked signing certificates.
+Symptom: sdi_rejection_rate critical, signing_cert_expiry_days at or near zero,
+         receipt lag and infrastructure both normal. Log Viewer shows sdi_error=00100.
+Shape:   The rejection rate jumps in one step rather than drifting upward — one
+         cause is affecting every file, not many invoices going wrong at once.
+Cause:   The signing certificate has expired or been revoked; the SDI turns away
+         every transmission at the door.
 Fix:
-  1. Check Log Viewer: filter by level=warning, look for sdi_error=004 in context.
-  2. Identify the source system submitting invalid certificates (context.source).
-  3. Notify the submitting organization to renew their qualified electronic signature (QES).
-  4. Acknowledge the alert on the dashboard once the certificate batch is resolved.
-  5. Monitor error_rate on the affected validator — should drop to < 5% within 15 min.
-Escalation: If error_rate stays > 10% for > 30 min, escalate to SDI Integration team.
+  1. Confirm with signing_cert_expiry_days on the affected source — zero or negative.
+  2. Renew the certificate with the certification authority. Reissue takes days,
+     which is why the "high" threshold fires at 30 days remaining.
+  3. Re-transmit the rejected batch. The invoices are valid and may keep their
+     numbers, but each FILE must be renamed — otherwise the SDI answers 00002
+     (nome file duplicato) and the batch is refused a second time.
+  4. Acknowledge the alerts once the rejection rate returns to baseline.
+Escalation: If rejection rate stays > 15% for > 30 min after renewal, escalate to
+         the SDI Integration team — the cause is not the certificate.
 ```
 
 ---
@@ -566,15 +630,19 @@ Note the code is about the file name, not the invoice number: a rejected invoice
 may be resent with the same number, but the file must be renamed.*
 
 ```
-Symptom: High error_rate + memory_usage spike on sdi-batch-napoli-01 (or similar).
-         Scenario-4 ("FatturaPA Batch Failure Spike") replicates this condition.
-Cause:   Re-submission of already-processed invoices (common after a downstream outage).
+Symptom: sdi_rejection_rate critical while signing_cert_expiry_days is healthy
+         and the channel is answering promptly. Log Viewer shows sdi_error=00002.
+         Scenario-5 replicates this condition.
+Cause:   A rejected batch was re-sent without renaming the files. 00002 is about
+         the FILE NAME, not the invoice number: an invoice may be re-sent with the
+         same number, but a file name already transmitted is refused outright.
 Fix:
-  1. Run scenario-4 in dry-run to baseline expected alert count for this failure mode.
-  2. Check Log Viewer: filter correlation_id of the affected SQS poll run.
-  3. Identify duplicated invoice_id values in the message context.
-  4. Coordinate with the originating SDI node operator to stop re-submission.
-  5. Acknowledge alerts after re-submission stops. Clear acknowledged alerts from dashboard.
+  1. Run scenario-5 in dry-run to baseline the expected alert count.
+  2. Check Log Viewer: filter by the correlation_id of the affected poll run.
+  3. Confirm the file naming scheme on the re-transmitting node — names must be
+     unique per transmission, not per invoice.
+  4. Coordinate with the originating node operator to rename and re-send.
+  5. Acknowledge alerts once the rejection rate returns to baseline.
 Escalation: If message volume > 1000/hour, activate Emergency Stop (§11) and page SDI team.
 ```
 
