@@ -76,8 +76,8 @@ become client emergencies.
 - **REST metric ingestion** — `POST /api/metrics` accepts JSON payloads from SDI/GovWay via mTLS
 - **Automatic alert engine** — threshold-based rules evaluated on every ingestion; alerts persisted to RDS
 - **Asynchronous SQS worker** — `bin/cake sqs:poll` dequeues and processes messages without blocking the web tier
--  **Domain metric model**  — receipt lag, rejection rate, certificate expiry, with infrastructure kept as diagnostic context rather than as the signal
-- AI diagnostics that name a cause and an action — a lag without rejections is a stalled channel, a rejection spike with an expiring certificate is code `00100`; deterministic fallback works without an API key
+- **Domain metric model**  — receipt lag, rejection rate, certificate expiry, with infrastructure kept as diagnostic context rather than as the signal
+- AI diagnostics that name a cause and an action — a lag without rejections is a stalled channel, a rejection spike with an expiring certificate is code `00100`; deterministic fallback works without an API key.
 - **SDI scenario simulator** — six scenarios, one per failure mode: stalled channel, saturation-induced lag, expired certificate (`00100`), duplicate file names (`00002`), payload rejection, and certificate expiry warning
 - **Countdown alert thresholds** — rules fire on values falling as well as rising, so certificate expiry warns days before the outage instead of reporting it afterwards
 - **Structured JSON log viewer** — paginated, filterable view of application logs
@@ -129,8 +129,8 @@ Required environment variables (or set them in `config/app_local.php`):
 - Async architecture with SQS worker decoupled from web tier
 - AI diagnostics with deterministic fallback — works without API key
 - mTLS integration with GovWay toward institutional SDI endpoints
-- PHPUnit test suite + CakePHP coding standard, both enforced in CI
-    
+- PHPUnit test suite + CakePHP coding standard, both enforced in CI.
+  
 ## Production status
 Production-grade architecture deployed on AWS Elastic Beanstalk:
 SQS async workers, RDS MySQL, CloudWatch observability, CI on every push.
