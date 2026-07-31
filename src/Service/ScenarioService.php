@@ -52,77 +52,153 @@ class ScenarioService
      * and value), the Italian operational site, and the expected alert outcome so
      * operators can verify pipeline correctness at a glance.
      *
+     * Each entry carries both 'expected_outcome', prose for the operator, and
+     * 'expected_alerts', the same claim as an integer. The duplication is
+     * deliberate: prose drifts away from behaviour silently, an integer is
+     * asserted by ScenarioServiceTest and cannot.
+     *
+     * The catalogue covers one failure mode per scenario rather than a set of
+     * arbitrary spikes, because the point of the simulator is to demonstrate
+     * that the system can tell these modes apart. Scenarios 1 and 2 are the pair
+     * worth running back to back: near-identical service metrics, opposite
+     * causes, opposite remedies.
+     *
      * Threshold alignment (from AlertsService::DEFAULT_THRESHOLDS):
-     * cpu_usage: high ≥ 80.0 %, critical ≥ 95.0 %
-     * memory_usage: high ≥ 85.0 %, critical ≥ 95.0 %
+     * sdi_receipt_lag_minutes:  high ≥ 30,  critical ≥ 120
+     * sdi_rejection_rate:       high ≥ 5 %, critical ≥ 15 %
+     * invoices_pending:         high ≥ 500, critical ≥ 2000
+     * signing_cert_expiry_days: high ≤ 30,  critical ≤ 7   (countdown)
+     * cpu_usage:                high ≥ 80 %, critical ≥ 95 %
+     * memory_usage:             high ≥ 85 %, critical ≥ 95 %
      *
      * @var array<string, array<string, mixed>>
      */
     private const SCENARIOS = [
         'scenario-1' => [
             'id' => 'scenario-1',
-            'name' => 'CPU Spike — SDI Batch Processing',
-            'description' => 'Simulates a CPU saturation event on the Milan SDI batch processor '
-                                . 'during peak FatturaPA invoice ingestion. Transmission itself succeeds '
-                                . '(Ricevuta di Consegna), so no rejection code is recorded. '
-                                . 'Three metric samples: 55 % (healthy), 82 % (high breach), 97 % (critical breach).',
-            'expected_outcome' => '2 alerts: 1 high + 1 critical',
+            'name' => 'Stalled channel — no receipts coming back',
+            'description' => 'Invoices leave the Milan batch node normally and the SDI is not refusing '
+                                . 'them, but receipts stop arriving: the lag climbs from 4 to 95 minutes '
+                                . 'while the rejection rate stays at baseline and infrastructure is idle. '
+                                . 'This is the failure that is easiest to misdiagnose, because the obvious '
+                                . 'reflex — re-transmitting the batch — is the one thing that cannot help: '
+                                . 'the files were accepted, it is the answers that are missing.',
+            'expected_outcome' => '3 alerts (lag high, lag critical, pending critical); diagnosis: stalled queue',
+            'expected_alerts' => 3,
             'source' => 'sdi-batch-milano-01',
             'tags' => ['sdi_error' => null, 'env' => 'prod', 'region' => 'eu-west-1', 'site' => 'CED Milano'],
             'events' => [
-                ['name' => 'cpu_usage', 'value' => 55.0, 'unit' => 'percent'],
-                ['name' => 'cpu_usage', 'value' => 82.0, 'unit' => 'percent'],
-                ['name' => 'cpu_usage', 'value' => 97.0, 'unit' => 'percent'],
+                ['name' => 'sdi_rejection_rate', 'value' => 1.1, 'unit' => 'percent'],
+                ['name' => 'cpu_usage', 'value' => 34.0, 'unit' => 'percent'],
+                ['name' => 'sdi_receipt_lag_minutes', 'value' => 4.0, 'unit' => 'minutes'],
+                ['name' => 'sdi_receipt_lag_minutes', 'value' => 45.0, 'unit' => 'minutes'],
+                ['name' => 'sdi_receipt_lag_minutes', 'value' => 95.0, 'unit' => 'minutes'],
+                ['name' => 'invoices_pending', 'value' => 8266.0, 'unit' => 'count'],
             ],
         ],
         'scenario-2' => [
             'id' => 'scenario-2',
-            'name' => 'Memory Pressure — FatturaPA Validation',
-            'description' => 'Simulates memory saturation on the Rome FatturaPA validator '
-                                . 'during batch validation of large XML invoice packages '
-                                . '(SDI rejection code 00100 — certificato di firma scaduto). '
-                                . 'Two samples: 70 % (healthy), 92 % (high breach).',
-            'expected_outcome' => '1 alert: 1 high',
+            'name' => 'Saturated nodes — lag caused from inside',
+            'description' => 'The same service-level symptom as scenario 1 — receipts lagging, nothing '
+                                . 'being refused — but here the Rome validator is saturated at 97 % CPU '
+                                . 'and 94 % memory. Identical dashboard state, opposite cause and opposite '
+                                . 'remedy: the bottleneck is this system failing to process the receipts '
+                                . 'it receives, not the SDI failing to send them. Run it back to back with '
+                                . 'scenario 1 to see the diagnosis change while the numbers stay similar.',
+            'expected_outcome' => '4 alerts (lag, cpu high+critical, memory critical); '
+                                . 'diagnosis: saturation is the cause',
+            'expected_alerts' => 4,
             'source' => 'fatturapa-validator-roma-01',
-            'tags' => ['sdi_error' => '00100', 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Roma'],
+            'tags' => ['sdi_error' => null, 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Roma'],
             'events' => [
-                ['name' => 'memory_usage', 'value' => 70.0, 'unit' => 'percent'],
-                ['name' => 'memory_usage', 'value' => 92.0, 'unit' => 'percent'],
+                ['name' => 'sdi_rejection_rate', 'value' => 0.9, 'unit' => 'percent'],
+                ['name' => 'sdi_receipt_lag_minutes', 'value' => 88.0, 'unit' => 'minutes'],
+                ['name' => 'cpu_usage', 'value' => 82.0, 'unit' => 'percent'],
+                ['name' => 'cpu_usage', 'value' => 97.0, 'unit' => 'percent'],
+                ['name' => 'memory_usage', 'value' => 94.0, 'unit' => 'percent'],
             ],
         ],
         'scenario-3' => [
             'id' => 'scenario-3',
-            'name' => 'Normal Operation — All Clear',
-            'description' => 'Simulates nominal load across the Turin SDI gateway '
-                                . 'during off-peak hours. All three metric samples are '
-                                . 'comfortably below alert thresholds. Useful for verifying '
-                                . 'that healthy metrics do not trigger spurious alerts.',
+            'name' => 'Normal operation — all clear',
+            'description' => 'Nominal traffic through the Turin gateway during off-peak hours. Receipts '
+                                . 'return within minutes, the rejection rate sits at its irreducible '
+                                . 'baseline, and the signing certificate has months of validity left. '
+                                . 'Useful for verifying that a healthy flow raises no spurious alerts — '
+                                . 'in particular that a certificate valid for 210 more days is not read '
+                                . 'as a breach, which is what a naive upward comparison would do.',
             'expected_outcome' => '0 alerts — system green',
+            'expected_alerts' => 0,
             'source' => 'sdi-gateway-torino-01',
             'tags' => ['sdi_error' => null, 'env' => 'prod', 'region' => 'eu-west-1', 'site' => 'CED Torino'],
             'events' => [
-                ['name' => 'cpu_usage', 'value' => 30.0, 'unit' => 'percent'],
-                ['name' => 'memory_usage', 'value' => 50.0, 'unit' => 'percent'],
-                ['name' => 'cpu_usage', 'value' => 40.0, 'unit' => 'percent'],
+                ['name' => 'sdi_receipt_lag_minutes', 'value' => 3.0, 'unit' => 'minutes'],
+                ['name' => 'sdi_rejection_rate', 'value' => 0.8, 'unit' => 'percent'],
+                ['name' => 'invoices_pending', 'value' => 52.0, 'unit' => 'count'],
+                ['name' => 'signing_cert_expiry_days', 'value' => 210.0, 'unit' => 'days'],
+                ['name' => 'cpu_usage', 'value' => 31.0, 'unit' => 'percent'],
+                ['name' => 'memory_usage', 'value' => 48.0, 'unit' => 'percent'],
             ],
         ],
         'scenario-4' => [
             'id' => 'scenario-4',
-            'name' => 'FatturaPA Batch Failure Spike — Naples',
-            'description' => 'Simulates a cascading failure on the Naples SDI batch node '
-                                . 'caused by a flood of duplicate invoice rejections '
-                                . '(SDI rejection code 00002 — nome file duplicato). '
-                                . 'Four metric samples produce three alert breaches: '
-                                . '65 % CPU (ok), 88 % memory (high), 96 % CPU (critical), '
-                                . '97 % memory (critical).',
-            'expected_outcome' => '3 alerts: 1 high + 2 critical',
+            'name' => 'Expired signing certificate — SDI 00100',
+            'description' => 'The signing certificate on the Naples batch node lapses and the SDI begins '
+                                . 'refusing every file with code 00100 (certificato di firma scaduto). '
+                                . 'Note the shape of the failure: the rejection rate goes to 98 % in one '
+                                . 'step rather than drifting upwards, because a single cause is affecting '
+                                . 'the whole batch. Infrastructure stays healthy throughout — nothing is '
+                                . 'overloaded, everything is simply being turned away at the door.',
+            'expected_outcome' => '2 alerts (rejection critical, cert critical); diagnosis names code 00100',
+            'expected_alerts' => 2,
             'source' => 'sdi-batch-napoli-01',
-            'tags' => ['sdi_error' => '00002', 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Napoli'],
+            'tags' => ['sdi_error' => '00100', 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Napoli'],
             'events' => [
-                ['name' => 'cpu_usage', 'value' => 65.0, 'unit' => 'percent'],
-                ['name' => 'memory_usage', 'value' => 88.0, 'unit' => 'percent'],
-                ['name' => 'cpu_usage', 'value' => 96.0, 'unit' => 'percent'],
-                ['name' => 'memory_usage', 'value' => 97.0, 'unit' => 'percent'],
+                ['name' => 'sdi_receipt_lag_minutes', 'value' => 6.0, 'unit' => 'minutes'],
+                ['name' => 'cpu_usage', 'value' => 22.0, 'unit' => 'percent'],
+                ['name' => 'signing_cert_expiry_days', 'value' => 0.0, 'unit' => 'days'],
+                ['name' => 'sdi_rejection_rate', 'value' => 98.0, 'unit' => 'percent'],
+            ],
+        ],
+        'scenario-5' => [
+            'id' => 'scenario-5',
+            'name' => 'Duplicate file names on re-transmission — SDI 00002',
+            'description' => 'A rejected batch is re-sent from Bologna without renaming the files, so the '
+                                . 'SDI refuses it again with code 00002 (nome file duplicato). The '
+                                . 'certificate is valid and the channel is answering promptly, which is '
+                                . 'what separates this from scenario 4: the transmission mechanism works, '
+                                . 'the payload is being turned away. Worth knowing that 00002 is about the '
+                                . 'file name and not the invoice number — a rejected invoice may keep its '
+                                . 'number, but the file must be renamed.',
+            'expected_outcome' => '1 alert (rejection critical); diagnosis points at the payload, not the certificate',
+            'expected_alerts' => 1,
+            'source' => 'sdi-batch-bologna-01',
+            'tags' => ['sdi_error' => '00002', 'env' => 'prod', 'region' => 'eu-south-1', 'site' => 'CED Bologna'],
+            'events' => [
+                ['name' => 'signing_cert_expiry_days', 'value' => 240.0, 'unit' => 'days'],
+                ['name' => 'sdi_receipt_lag_minutes', 'value' => 5.0, 'unit' => 'minutes'],
+                ['name' => 'sdi_rejection_rate', 'value' => 87.0, 'unit' => 'percent'],
+            ],
+        ],
+        'scenario-6' => [
+            'id' => 'scenario-6',
+            'name' => 'Certificate expiring — warning before the outage',
+            'description' => 'Every service metric on the Milan gateway is healthy, and the system alerts '
+                                . 'anyway: the signing certificate expires in five days. This is the only '
+                                . 'scenario in the catalogue where nothing has broken yet, and the only one '
+                                . 'where acting on the alert prevents an incident rather than shortening '
+                                . 'one. When the certificate lapses there is no gradual degradation to '
+                                . 'notice — every transmission is refused at once with code 00100.',
+            'expected_outcome' => '1 alert (cert critical) on an otherwise green system; diagnosis: start renewal now',
+            'expected_alerts' => 1,
+            'source' => 'sdi-gateway-milano-02',
+            'tags' => ['sdi_error' => null, 'env' => 'prod', 'region' => 'eu-west-1', 'site' => 'CED Milano'],
+            'events' => [
+                ['name' => 'sdi_receipt_lag_minutes', 'value' => 3.0, 'unit' => 'minutes'],
+                ['name' => 'sdi_rejection_rate', 'value' => 0.7, 'unit' => 'percent'],
+                ['name' => 'invoices_pending', 'value' => 61.0, 'unit' => 'count'],
+                ['name' => 'cpu_usage', 'value' => 29.0, 'unit' => 'percent'],
+                ['name' => 'signing_cert_expiry_days', 'value' => 5.0, 'unit' => 'days'],
             ],
         ],
     ];
