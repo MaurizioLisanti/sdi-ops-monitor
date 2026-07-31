@@ -76,8 +76,10 @@ become client emergencies.
 - **REST metric ingestion** — `POST /api/metrics` accepts JSON payloads from SDI/GovWay via mTLS
 - **Automatic alert engine** — threshold-based rules evaluated on every ingestion; alerts persisted to RDS
 - **Asynchronous SQS worker** — `bin/cake sqs:poll` dequeues and processes messages without blocking the web tier
-- **AI diagnostics with fallback** — OpenRouter LLM analysis of anomalies; deterministic rule-based fallback active when the API key is absent
-- **SDI scenario simulator** — reproduces error codes 003 (delivery failure), 004 (format error), 009 (duplicate) for testing and demos
+-  **Domain metric model**  — receipt lag, rejection rate, certificate expiry, with infrastructure kept as diagnostic context rather than as the signal
+- AI diagnostics that name a cause and an action — a lag without rejections is a stalled channel, a rejection spike with an expiring certificate is code `00100`; deterministic fallback works without an API key
+- **SDI scenario simulator** — six scenarios, one per failure mode: stalled channel, saturation-induced lag, expired certificate (`00100`), duplicate file names (`00002`), payload rejection, and certificate expiry warning
+- **Countdown alert thresholds** — rules fire on values falling as well as rising, so certificate expiry warns days before the outage instead of reporting it afterwards
 - **Structured JSON log viewer** — paginated, filterable view of application logs
 - **Health check endpoint** — `GET /health` returns `{"status":"ok"}` for load-balancer probes
 - **Bilingual runbook (EN/IT)** — operational procedures documented in `docs/RUNBOOK.md`
@@ -129,7 +131,7 @@ Required environment variables (or set them in `config/app_local.php`):
 - mTLS integration with GovWay toward institutional SDI endpoints
 - PHPUnit test suite + CakePHP coding standard, both enforced in CI
     
-  ## Production status
+## Production status
 Production-grade architecture deployed on AWS Elastic Beanstalk:
 SQS async workers, RDS MySQL, CloudWatch observability, CI on every push.
 
@@ -192,7 +194,7 @@ SSL termination, SQS polling and CloudWatch agent are configured via `.ebextensi
 ## Tests
 
 ```bash
-# Unit + integration test suite 
+# Unit + integration test suite (86 tests)
 vendor/bin/phpunit
 
 # Code-style check (CakePHP standard)
@@ -250,12 +252,17 @@ published by the Agenzia delle Entrate
 
 | Code | Meaning | Simulated by |
 |---|---|---|
-| `00100` | Certificato di firma scaduto — the signing certificate has expired | `ScenarioService::run('scenario-2')` |
-| `00002` | Nome file duplicato — a file with this name was already transmitted | `ScenarioService::run('scenario-4')` |
+| `00100` | Certificato di firma scaduto — the signing certificate has expired | `ScenarioService::run('scenario-4')` |
+| `00002` | Nome file duplicato — a file with this name was already transmitted | `ScenarioService::run('scenario-5')` |
 
-A successful transmission produces no rejection code: it produces a *Ricevuta
-di Consegna* (RC). Scenarios that model healthy traffic (`scenario-1`,
-`scenario-3`) therefore carry no code.
+Note that `00002` is about the file name, not the invoice number: a rejected
+invoice may be re-sent keeping its number, but the file must be renamed.
+Missing this is the usual reason a corrected batch is refused a second time.
+
+A successful transmission produces no rejection code — it produces a *Ricevuta
+di Consegna* (RC). Scenarios `1`, `2`, `3` and `6` therefore carry no code:
+they model stalls and warnings, where files are accepted and it is the
+answers that are missing.
 
 ---
 ## Related projects
