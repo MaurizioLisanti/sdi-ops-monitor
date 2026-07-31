@@ -5,21 +5,26 @@
 [![CakePHP 5](https://img.shields.io/badge/CakePHP-5-D33C43?logo=cakephp&logoColor=white)](https://cakephp.org/)
 [![AWS Elastic Beanstalk](https://img.shields.io/badge/AWS-Elastic%20Beanstalk-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/elasticbeanstalk/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 ## The problem
+
 SDI flow failures surface only when the client calls.
 By then the invoice is blocked, the deadline is missed
 and the fix is urgent. There is no visibility
 until something breaks.
+
 ## The solution
+
 A real-time traffic-light dashboard that monitors
 SDI/FatturaPA flows continuously — green, yellow or red
 before the client calls. AI-assisted diagnostics
 with deterministic fallback when no API key is available.
+
 ## Who is it for
+
 Technical teams managing SDI/FatturaPA flows in production
 who need operational visibility before failures
 become client emergencies.
-
 
 ---
 
@@ -124,14 +129,18 @@ Required environment variables (or set them in `config/app_local.php`):
 | `OPENROUTER_API_KEY` | *(optional)* enables AI diagnostics |
 
 ---
+
 ## What it demonstrates
+
 - Production-grade PHP 8.2 / CakePHP 5 on AWS Elastic Beanstalk
 - Async architecture with SQS worker decoupled from web tier
-- AI diagnostics with deterministic fallback — works without API key
+- Domain metric model — receipt lag, rejection rate, certificate expiry, with infrastructure kept as diagnostic context rather than as the signal
+- AI diagnostics that name a cause and an action — a lag without rejections is a stalled channel, a rejection spike with an expiring certificate is code `00100`; deterministic fallback works without an API key
 - mTLS integration with GovWay toward institutional SDI endpoints
-- PHPUnit test suite + CakePHP coding standard, both enforced in CI.
-  
+- PHPUnit test suite + CakePHP coding standard, both enforced in CI
+
 ## Production status
+
 Production-grade architecture deployed on AWS Elastic Beanstalk:
 SQS async workers, RDS MySQL, CloudWatch observability, CI on every push.
 
@@ -142,6 +151,7 @@ Agenzia delle Entrate — no real invoice data is transmitted or stored.
 Part of a broader ecosystem: fatturapa-mcp-server → sdi-ops-monitor.
 
 ---
+
 ## How this was built
 
 This project was not prompted into existence in one shot. It was built with a
@@ -169,7 +179,6 @@ for the full workflow, the seven stage prompts and the gate definitions.
 
 Repository conventions and the Definition of Done live in
 [`AGENTS.md`](AGENTS.md).
-
 
 ## Deploy to AWS
 
@@ -265,6 +274,7 @@ they model stalls and warnings, where files are accepted and it is the
 answers that are missing.
 
 ---
+
 ## Related projects
 
 - **[fatturapa-mcp-server](https://github.com/MaurizioLisanti/fatturapa-mcp-server)** —
@@ -275,7 +285,7 @@ answers that are missing.
 - **[agentic-dev-pipeline](https://github.com/MaurizioLisanti/agentic-dev-pipeline)** —
   The governed multi-agent development pipeline this project was built with:
   risk-based routing, hard quality gates, auditable handoffs.
-  
+
 ## License
 
 [MIT](LICENSE)
