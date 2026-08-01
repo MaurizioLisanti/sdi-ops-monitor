@@ -8,7 +8,6 @@ use Cake\Routing\RouteBuilder;
  * Routes — sdi-ops-monitor
  *
  * @skeleton M0
- * TODO (Planner): add auth-guarded prefix routes for admin panel if needed.
  */
 return static function (RouteBuilder $routes): void {
     $routes->setRouteClass(DashedRoute::class);
@@ -23,9 +22,15 @@ return static function (RouteBuilder $routes): void {
     });
 
     // REST API — /api/metrics
+    //
+    // Restricted to the create action deliberately. resources() would also map
+    // index, view, edit and delete; those actions do not exist, so the routes
+    // would resolve and then fail inside the framework — a 500 where a 404 is
+    // the honest answer. Listing the action explicitly keeps the routing table
+    // and the controller in agreement: what is routable is what is implemented.
     $routes->prefix('Api', function (RouteBuilder $builder): void {
         $builder->setExtensions(['json']);
-        $builder->resources('Metrics');
+        $builder->resources('Metrics', ['only' => ['create']]);
     });
 
     // Dashboard (catch-all)
