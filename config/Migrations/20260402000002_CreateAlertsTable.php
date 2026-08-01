@@ -7,7 +7,11 @@ use Migrations\BaseMigration;
  * Migration: create alerts table.
  *
  * @skeleton M0
- * TODO (Planner): confirm FK constraint behavior on metric delete (cascade vs restrict).
+ * metric_id references metrics.id but carries no database-level foreign key
+ * constraint: the column is nullable and indexed, and the relationship is
+ * enforced by the ORM association alone. The consequence worth knowing is that
+ * deleting a metric leaves its alerts pointing at a row that no longer exists,
+ * so a retention policy on metrics must clear the matching alerts itself.
  */
 class CreateAlertsTable extends BaseMigration
 {
