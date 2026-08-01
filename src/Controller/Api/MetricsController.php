@@ -27,6 +27,10 @@ use Throwable;
  * report" and "not implemented". They were removed rather than left in place.
  * The dashboard reads metrics through the ORM and never went through this API.
  *
+ * The route binds the HTTP method, so GET /api/metrics answers 405 Method Not
+ * Allowed. That is deliberate: it tells a caller the endpoint exists and takes
+ * POST, where a 404 would suggest the path itself is wrong.
+ *
  * SNS pipeline (M1):
  * When the X-Amz-Sns-Message-Type header is present, add() routes the request
  * through the SNS-specific pipeline before any metric is written:
