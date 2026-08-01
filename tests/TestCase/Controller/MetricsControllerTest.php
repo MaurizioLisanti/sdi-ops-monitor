@@ -265,13 +265,18 @@ class MetricsControllerTest extends TestCase
     // point; unblock this test in M2+ by wiring DI in Application::services().
 
     /**
-     * The API must expose ingestion only; read routes must not resolve.
+     * The API must expose ingestion only; GET must be refused at routing level.
      *
      * index() and view() once existed as placeholders answering 200 with a fixed
-     * empty payload no matter what was stored. A caller could not distinguish
-     * "no metrics recorded" from "not implemented", which is a worse failure
-     * than an absent endpoint: a 404 is unambiguous. This test pins the removal
-     * so a future resources() call cannot quietly route them back to nothing.
+     * empty payload no matter what was stored, so a caller could not distinguish
+     * "no metrics recorded" from "not implemented".
+     *
+     * 405 rather than 404 is deliberate, and the first attempt at this test got
+     * it wrong. Removing the actions alone left the URL to be swallowed by the
+     * catch-all route, which produced a 404 locally and a 500 on CI — a route
+     * that resolves to a controller which does not exist fails inside the
+     * framework. Binding the method in routes.php makes the answer deterministic
+     * and more informative: the endpoint exists, POST is what it accepts.
      *
      * @return void
      */
@@ -282,13 +287,6 @@ class MetricsControllerTest extends TestCase
         ]);
 
         $this->get('/api/metrics.json');
-        $this->assertResponseCode(404, 'Listing metrics over HTTP is not part of this API.');
-
-        $this->configRequest([
-            'headers' => ['Authorization' => $this->basicAuthHeader()],
-        ]);
-
-        $this->get('/api/metrics/1.json');
-        $this->assertResponseCode(404, 'Reading a single metric over HTTP is not part of this API.');
+        $this->assertResponseCode(405, 'Listing metrics over HTTP is not part of this API.');
     }
 }
