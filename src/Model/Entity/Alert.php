@@ -20,7 +20,11 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\DateTime $created
  * @property \Cake\I18n\DateTime $modified
  * @skeleton M0
- * TODO (Planner): implement status transitions (open → ack → resolved).
+ * Status is a free field with two states in practice, open and acknowledged.
+ * A resolved state is deliberately absent: an alert stops being relevant when
+ * the metric returns below threshold, which the evaluation loop already
+ * reflects, so a manual resolution step would record an operator opinion
+ * rather than a fact about the system.
  */
 class Alert extends Entity
 {
