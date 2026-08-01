@@ -19,8 +19,13 @@ use Throwable;
  *
  * Routes (prefix: Api, extension: json):
  * POST /api/metrics.json → add() — ingest a new metric event
- * GET /api/metrics.json → index() — list recent metrics (M1)
- * GET /api/metrics/{id}.json → view() — single metric detail (M1)
+ *
+ * Ingestion only, by design. Read endpoints previously existed as placeholders
+ * that answered 200 with a fixed empty payload regardless of what was stored;
+ * an endpoint that reports no data while data exists is worse than one that is
+ * absent, because a caller cannot tell the difference between "nothing to
+ * report" and "not implemented". They were removed rather than left in place.
+ * The dashboard reads metrics through the ORM and never went through this API.
  *
  * SNS pipeline (M1):
  * When the X-Amz-Sns-Message-Type header is present, add() routes the request
@@ -31,21 +36,6 @@ use Throwable;
  */
 class MetricsController extends AppController
 {
-    /**
-     * Placeholder index action — returns an empty dataset.
-     *
-     * Full pagination and filtering are deferred to M1.
-     *
-     * @return \Cake\Http\Response JSON response with an empty data array and zero total.
-     */
-    public function index(): Response
-    {
-        // TODO (Planner): paginate MetricsTable query, return JSON.
-        return $this->response
-            ->withType('application/json')
-            ->withStringBody(json_encode(['data' => [], 'meta' => ['total' => 0]], JSON_THROW_ON_ERROR));
-    }
-
     /**
      * Ingest a new metric event from the JSON request body.
      *
@@ -77,22 +67,6 @@ class MetricsController extends AppController
 
         // Normal metric ingestion pipeline (unchanged from M0).
         return $this->ingestMetric($this->request->getData());
-    }
-
-    /**
-     * Placeholder view action — echoes back the requested record ID only.
-     *
-     * Full implementation (load from DB, 404 handling) is deferred to M1.
-     *
-     * @param string $id The metric record identifier from the URL segment.
-     * @return \Cake\Http\Response JSON response containing the requested ID.
-     * TODO (Planner): load Metric by $id, return 404 if not found.
-     */
-    public function view(string $id): Response
-    {
-        return $this->response
-            ->withType('application/json')
-            ->withStringBody(json_encode(['id' => $id], JSON_THROW_ON_ERROR));
     }
 
     /**
