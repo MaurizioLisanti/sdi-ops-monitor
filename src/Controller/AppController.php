@@ -11,7 +11,9 @@ use Cake\Controller\Controller;
  * Auth (BasicAuthMiddleware) and correlation_id propagation (CorrelationIdMiddleware)
  * are handled at the middleware layer since M1.
  *
- * TODO: add rate-limit middleware.
+ * No rate limiting: Basic Auth is the only access control, which is adequate
+ * for a single-operator deployment behind a private network but not for a
+ * public endpoint. See the security notes in README before exposing this.
  */
 class AppController extends Controller
 {
