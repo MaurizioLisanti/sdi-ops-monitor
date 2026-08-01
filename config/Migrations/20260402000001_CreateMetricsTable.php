@@ -7,7 +7,9 @@ use Migrations\BaseMigration;
  * Migration: create metrics table.
  *
  * @skeleton M0
- * TODO (Planner): review column types/precision; add composite indexes after load testing.
+ * Indexed on recorded_at and on (source, name), the two access patterns in use:
+ * newest-first reads for diagnosis, and per-source filtering on the dashboard.
+ * Further composite indexes should follow measurement, not speculation.
  */
 class CreateMetricsTable extends BaseMigration
 {
