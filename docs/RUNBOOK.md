@@ -169,12 +169,16 @@ curl -u ops:YOUR_PASSWORD \
      -H "Content-Type: application/json" \
      -d '{
        "source":      "sdi-batch-milano-01",
-       "name":        "cpu_usage",
-       "value":       87.4,
-       "unit":        "percent",
+       "name":        "sdi_receipt_lag_minutes",
+       "value":       95,
+       "unit":        "minutes",
        "tags":        {"env": "prod", "region": "eu-west-1", "site": "CED Milano"},
        "recorded_at": "2026-04-10T10:00:00Z"
      }'
+# → HTTP 201 {"data": {"id": 42, ...}, "meta": {...}}
+# Above the critical threshold of 30 minutes, so this single call also creates
+# an alert. Infrastructure metrics are posted the same way:
+#   {"source": "sdi-batch-milano-01", "name": "cpu_usage", "value": 87.4, "unit": "percent"}
 # → HTTP 201 {"data": {"id": 42, ...}, "meta": {...}}
 ```
 
