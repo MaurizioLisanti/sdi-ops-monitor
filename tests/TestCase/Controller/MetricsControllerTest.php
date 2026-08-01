@@ -263,4 +263,32 @@ class MetricsControllerTest extends TestCase
     //   (b) a custom ControllerFactory registered in Application — forbidden path.
     // The protected factory method createSnsValidator() already provides the extension
     // point; unblock this test in M2+ by wiring DI in Application::services().
+
+    /**
+     * The API must expose ingestion only; read routes must not resolve.
+     *
+     * index() and view() once existed as placeholders answering 200 with a fixed
+     * empty payload no matter what was stored. A caller could not distinguish
+     * "no metrics recorded" from "not implemented", which is a worse failure
+     * than an absent endpoint: a 404 is unambiguous. This test pins the removal
+     * so a future resources() call cannot quietly route them back to nothing.
+     *
+     * @return void
+     */
+    public function testReadRoutesAreNotExposed(): void
+    {
+        $this->configRequest([
+            'headers' => ['Authorization' => $this->basicAuthHeader()],
+        ]);
+
+        $this->get('/api/metrics.json');
+        $this->assertResponseCode(404, 'Listing metrics over HTTP is not part of this API.');
+
+        $this->configRequest([
+            'headers' => ['Authorization' => $this->basicAuthHeader()],
+        ]);
+
+        $this->get('/api/metrics/1.json');
+        $this->assertResponseCode(404, 'Reading a single metric over HTTP is not part of this API.');
+    }
 }
