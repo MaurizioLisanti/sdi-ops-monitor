@@ -23,14 +23,25 @@ return static function (RouteBuilder $routes): void {
 
     // REST API — /api/metrics
     //
-    // Restricted to the create action deliberately. resources() would also map
-    // index, view, edit and delete; those actions do not exist, so the routes
-    // would resolve and then fail inside the framework — a 500 where a 404 is
-    // the honest answer. Listing the action explicitly keeps the routing table
-    // and the controller in agreement: what is routable is what is implemented.
+    // One explicit route rather than resources(). Two reasons.
+    //
+    // resources() maps index, view, edit and delete alongside create; those
+    // actions do not exist, so the routes resolved and then failed inside the
+    // framework. Restricting it with ['only' => ['create']] stops the mapping
+    // but leaves the URL to be swallowed by the catch-all further down, whose
+    // behaviour varies between environments — locally a 404, on CI a 500.
+    //
+    // Binding the method here instead makes the answer deterministic and more
+    // accurate than either: GET /api/metrics returns 405 Method Not Allowed,
+    // which tells a caller the endpoint exists and takes POST, rather than
+    // implying the path is wrong.
     $routes->prefix('Api', function (RouteBuilder $builder): void {
         $builder->setExtensions(['json']);
-        $builder->resources('Metrics', ['only' => ['create']]);
+        $builder->connect(
+            '/metrics',
+            ['controller' => 'Metrics', 'action' => 'add'],
+            ['_method' => 'POST'],
+        );
     });
 
     // Dashboard (catch-all)
