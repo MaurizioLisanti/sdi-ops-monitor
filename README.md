@@ -63,7 +63,7 @@ become client emergencies.
 
 | Layer | Technology |
 |---|---|
-| Language | PHP 8.2 |
+| Language | PHP 8.2 (≥ 8.2.35, PHP2Shell fixes; CI also on 8.3 and 8.4) |
 | Framework | CakePHP 5 |
 | Database | MySQL 8.0 / AWS RDS |
 | Infrastructure | AWS Elastic Beanstalk (Amazon Linux 2023) |
@@ -132,17 +132,19 @@ Required environment variables (or set them in `config/app_local.php`):
 
 ## What it demonstrates
 
-- Production-grade PHP 8.2 / CakePHP 5 on AWS Elastic Beanstalk
+- Production-ready PHP 8.2 / CakePHP 5 architecture for AWS Elastic Beanstalk
 - Async architecture with SQS worker decoupled from web tier
 - Domain metric model — receipt lag, rejection rate, certificate expiry, with infrastructure kept as diagnostic context rather than as the signal
 - AI diagnostics that name a cause and an action — a lag without rejections is a stalled channel, a rejection spike with an expiring certificate is code `00100`; deterministic fallback works without an API key
 - mTLS integration with GovWay toward institutional SDI endpoints
 - PHPUnit test suite + CakePHP coding standard, both enforced in CI
 
-## Production status
+## Project status
 
-Production-grade architecture deployed on AWS Elastic Beanstalk:
-SQS async workers, RDS MySQL, CloudWatch observability, CI on every push.
+Portfolio and reference project: the code, tests and CI are complete, and the
+repository includes the full configuration for AWS Elastic Beanstalk
+(SQS async workers, RDS MySQL, CloudWatch observability). It is not currently
+running as a public deployment.
 
 SDI/FatturaPA integration is exercised through a scenario simulator that
 replays official SDI rejection codes (00002, 00100) as published by the
@@ -216,6 +218,14 @@ Or use the Makefile shortcuts:
 make test
 make phpcs
 ```
+
+## Security
+
+CI checks on every run that PHP includes the PHP2Shell fixes
+(CVE-2026-109618, CVE-2026-109619) and runs the suite on PHP 8.2, 8.3 and 8.4,
+ahead of the PHP 8.2 end of security support (31 December 2026).
+Details, server checks and how to report a vulnerability:
+[`SECURITY.md`](SECURITY.md).
 
 ---
 

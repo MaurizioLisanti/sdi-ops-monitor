@@ -41,7 +41,7 @@
 
 ### Prerequisites / Prerequisiti
 
-- PHP 8.2+ with extensions: `pdo_mysql`, `mbstring`, `intl`
+- PHP 8.2.35+ (or 8.3.36+ / 8.4.27+: PHP2Shell fixes, see [`SECURITY.md`](../SECURITY.md)) with extensions: `pdo_mysql`, `mbstring`, `intl`
 - Composer 2.x
 - MySQL 8.0 running and accessible
 - (Optional) AWS credentials for SQS polling
